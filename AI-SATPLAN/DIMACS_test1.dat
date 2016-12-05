@@ -1,8 +1,9 @@
 c
 c start with comments
-c
+c NOT satisfiable
 c 
-p cnf 5 3
-1 -5 4 0
--1 5 3 4 0
--3 -4 0
+p cnf 2 2 
+-1 2 0
+-1 -2 0
+1 2 0
+1 -2 0

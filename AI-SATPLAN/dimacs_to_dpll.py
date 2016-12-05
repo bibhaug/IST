@@ -14,11 +14,13 @@ class Clause:
 	def __init__(self):
 		self.clause = []
 
-def read_DIMACS_file():
-	f = open('DIMACS_test.dat', 'r')
+def readDimacsFile():
+	f = open('DIMACS_test2.dat', 'r')
 	line = f.readline()
-	current_clause = Clause()
-	clauses = SAT_sentence()
+	#current_clause = Clause()
+	#clauses = SAT_sentence()
+	current_clause = []
+	clauses = []
 
 	while line:
 		if line != '\n':
@@ -28,6 +30,7 @@ def read_DIMACS_file():
 				nbclauses = splitLine[3]
 			elif not line.startswith('c'):
 				current_clause = splitLine
-				clauses.add_clause(current_clause)
+				#clauses.add_clause(current_clause)
+				clauses.append(current_clause)
 		line = f.readline()
 	return clauses, nbvar, nbclauses

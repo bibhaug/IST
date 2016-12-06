@@ -1,4 +1,5 @@
 import time
+import copy
 
 from dimacs_to_dpll import readDimacsFile
 
@@ -7,14 +8,17 @@ def dpllHandler():
 	print(clauses)
 
 	satisfiable = dpllAlgorithm(clauses)
-	print('Satisfiability: ', satisfiable)
+	print('\nSatisfiability: ', satisfiable)
 
 def dpllAlgorithm(clauses):
+	print('\n\nEntered new instance of dpllAlgorithm')
+	print('Current SAT-sentence is: ', clauses)
 	if containsNoClauses(clauses):
 		return True
 
 	elif containsEmptyClause(clauses):
-		print('EMPTY CLAUSE FOUND -------------------------------------------------------', '\n', '\n')
+		print('EMPTY CLAUSE FOUND -------------------------------------------------------')
+		print('Returning False because of empty clause')
 		return False
 
 	#"""
@@ -23,34 +27,34 @@ def dpllAlgorithm(clauses):
 	#	literal = pure_literal
 	#	return dpllAlgorithm(simplify(clauses, literal))
 	#"""
-	contains_unit_clause, unit_clause_literal = containsUnitClause(clauses)
-	if contains_unit_clause:
-		literal = unit_clause_literal
-		print('Unit_clause literal to simplify is: ', literal)
-		return dpllAlgorithm(simplify(clauses, literal))
+	#contains_unit_clause, unit_clause_literal = containsUnitClause(clauses)
+	#if contains_unit_clause:
+	#	literal = unit_clause_literal
+	#	print('Unit_clause literal to simplify is: ', literal)
+	#	return dpllAlgorithm(simplify(clauses, literal))
 
 	else:
 		literal = selectRandomLiteral(clauses)
-		#print('Current literal to simplify is: ', literal)
+		print('Literal to simplify is: ', literal)
 		if dpllAlgorithm(simplify(clauses, literal)):
+			print('Returning True')
 			return True
 		else:
-			return dpllAlgorithm(simplify(clauses, negateLiteral(literal)))
+			print('Entered else-statement, trying with negated literal on CNF-sentence: ', clauses)
+			returning = dpllAlgorithm(simplify(clauses, negateLiteral(literal)))
+			print('Returning: ', returning, ' from within else-statement')
+			return returning
 	print('ERROR: Reached the end without returning anything.')
 
 def containsNoClauses(clauses):
 	if len(clauses) == 0:			#could also use 'if not clauses', but prefer len(x)==0 because it's more explicit, in that clauses is a list and not a boolean variable
-		print('NO CLAUSES LEFT WOHOOOO')
 		return True
 	else:
 		return False
 
 def containsEmptyClause(clauses):
-	#print('Checking for empty clause')
-	#print('Lenght of clauses:   ', len(clauses))
 	for i in range(len(clauses)):
-		if (len(clauses[i]) == 1):	#len(x) == 1 means there's only a 0 left in the clause, aka. it's empty
-			print('The empty clause contains: ', clauses[i])
+		if (len(clauses[i]) == 1):	#len(x) == 1 means there's only a 0 left in the clause, aka. it's 
 			return True
 	return False
 
@@ -71,7 +75,7 @@ def containsPureLiteral(clauses, nbvar):	#literal that only occurs with one pola
 	return True/False and literal
 """
 
-def containsUnitClause(clauses):	#clauses with only one literal
+def containsUnitClause(clauses):
 	for i in range(len(clauses)):
 		if (len(clauses[i])) == 2:
 			print('UNIT Clause found. The unit clause is: ', clauses[i][0])
@@ -86,54 +90,43 @@ def simplify(clauses, literal):
 	clauses2 = removeNegatedLiteralFromClauses(clauses1, negateLiteral(literal))
 	return clauses2
 
-"""
 def removeClausesContainingLiteral(clauses, literal):
 	indexes_to_remove = []
 	for clause in range(len(clauses)):
 		#print('Going through for-loop for the ', clause, ' time.')
 		if clauseContainsLiteral(clauses[clause], literal):
-			print('Clause #', clause, ' contains literal ', literal)
+			#print('Clause #', clause, ' contains literal ', literal)
 			#removed_clause = clauses.pop(clause)	#can this mess with the for-loop and the len(clauses) statement??? #changed from list.remove(x) to list.pop(index)
 			indexes_to_remove.append(clause)
-	indexes_to_remove.reverse()
-	print('Indexes to remove: ', indexes_to_remove, '\n' '\n')
-	for i in range(len(indexes_to_remove)):
-		removed_clause = clauses.pop(i)
-	print('New CNF-sentence after clause-removal: ', clauses)
-	return clauses
-"""
-def removeClausesContainingLiteral(clauses, literal):
-	indexes_to_remove = []
-	for clause in range(len(clauses)):
-		#print('Going through for-loop for the ', clause, ' time.')
-		if clauseContainsLiteral(clauses[clause], literal):
-			print('Clause #', clause, ' contains literal ', literal)
-			#removed_clause = clauses.pop(clause)	#can this mess with the for-loop and the len(clauses) statement??? #changed from list.remove(x) to list.pop(index)
-			indexes_to_remove.append(clause)
-	print('Indexes to remove: ', indexes_to_remove, '\n' '\n')
+	print('Indexes to remove: ', indexes_to_remove)
 
 	index_correction_counter = 0
+	copy_of_clauses = copy.deepcopy(clauses)
 	for i in range(len(indexes_to_remove)):
-		print('Removing index #', (indexes_to_remove[i]-index_correction_counter), 'Original index: ', indexes_to_remove[i], ' correction_counter: ', index_correction_counter)
-		removed_clause = clauses.pop(indexes_to_remove[i]-index_correction_counter)
+		removed_clause = copy_of_clauses.pop(indexes_to_remove[i]-index_correction_counter)
 		index_correction_counter+=1
-	print('New CNF-sentence after clause-removal: ', clauses)
-	return clauses
+	print('CNF-sentence after clause-removal: ', copy_of_clauses)
+	return copy_of_clauses
 
 
 def removeNegatedLiteralFromClauses(clauses, negated_literal):
-	for clause in range(len(clauses)):
-		if clauseContainsLiteral(clauses[clause], negated_literal):
+	copy_of_clauses = copy.deepcopy(clauses)
+	for clause in range(len(copy_of_clauses)):
+		if clauseContainsLiteral(copy_of_clauses[clause], negated_literal):
 			print('Removing negated_literal in clause #', clause)
-			clauses[clause].remove(negated_literal)	#here list.remove(x) is correct since we want to remove one specific object, not an entire list
-	print('New CNF-sentence after negated_literal-removal: ', clauses)
-	return clauses
+			copy_of_clauses[clause].remove(negated_literal)	#here list.remove(x) is correct since we want to remove one specific object, not an entire list
+	print('CNF-sentence after negated_literal-removal: ', copy_of_clauses)
+	return copy_of_clauses
 
 def negateLiteral(literal):
+	print('Original literal was ', literal)
 	if literal[0] == '-':
-		return literal[1]
+		literal.lstrip('-')
+		print('Negated literal is ', literal)
+		return literal
 	else:
 		negated_literal = '-' + literal
+		print('Negated literal is ', negated_literal)
 		return negated_literal
 
 def clauseContainsLiteral(clause, literal):

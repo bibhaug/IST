@@ -2,7 +2,7 @@ c
 c start with comments
 c NOT satisfiable
 c 
-p cnf 2 2 
+p cnf 2 4 
 -1 2 0
 -1 -2 0
 1 2 0

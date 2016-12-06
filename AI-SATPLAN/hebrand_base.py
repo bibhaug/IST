@@ -26,7 +26,6 @@ def constantsInDomain():
                                 letter_after_comma += atom[j]
                         if letter_after_comma not in constants_in_domain and startswith.isupper():
                                 constants_in_domain.append(letter_after_comma)
-        print('Constants_in_domain' , constants_in_domain)
         return constants_in_domain
 
 def all_combinations(how_many_characters):
@@ -35,24 +34,26 @@ def all_combinations(how_many_characters):
         combination_list = []
         for i in itertools.product(constants_in_domain, repeat = n):
                 combination_list.append(list(i))
-        print('Combination_list ', combination_list)
         return combination_list # [['A', 'A', 'A'], ...]
+
+def groundAtoms_init_goal():
+        all_actions, init_atoms, goal_atoms = info_from_file()
+        num_of_actions = len(all_actions)
+        list_of_atoms = []
+        for i in range (0, num_of_actions):
+                list_of_atoms += (init_atoms + goal_atoms)
+        grounded_atoms = set(list_of_atoms) #(without duplicates)
+        return grounded_atoms
 
 def groundActions():
         #Skal navnet på Action's være med i grounded_actions-lista? (tror ikke det)
         all_actions, init_atoms, goal_atoms = info_from_file()
-        grounded_actions = {} 
-        list_of_atoms = []
+        grounded_actions = set()
         name_of_preconds_and_effects = []
         num_of_actions = len(all_actions)
-        for i in range (0, num_of_actions):
-                list_of_atoms += (init_atoms + goal_atoms)
-        grounded_actions = set(list_of_atoms) #All excisting actions (without duplicates)
-        print('grounded_actions to start with ', grounded_actions)
         
         for n in range (0, num_of_actions): #Go through each action
                 preconds = all_actions[n].preconds
-                print('PRECONDS ', preconds)
                 one_precondition = []
                 for i in range(0, len(preconds)): #go through each precondition
                         one_precondition += preconds[i]
@@ -85,7 +86,6 @@ def groundActions():
                                                         grounded_actions.add(joined_create_new_precond)
                         one_precondition = []
                 effects = all_actions[n].effects
-                print ('EFFECTS ', effects)
                 one_effect = []
                 for i in range(0, len(effects)):
                 		one_effect += effects[i]
@@ -117,11 +117,15 @@ def groundActions():
                 								if joined_create_new_effect not in grounded_actions:
                 										grounded_actions.add(joined_create_new_effect)
                 		one_effect = []
-        print('grounded_actions with new elements', grounded_actions)
+        return grounded_actions
 
+def hebrandBase():
+        grounded_atoms = groundAtoms_init_goal()
+        grounded_actions = groundActions()
+        hebrand_base = grounded_atoms | grounded_actions
+        print('This is the Hebrand Base: ', hebrand_base)
+        return hebrand_base
         
-
-#constantsInDomain()
-groundActions()
+#hebrandBase()
 
 	

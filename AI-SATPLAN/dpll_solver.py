@@ -3,9 +3,14 @@ import copy
 
 from dimacs_to_dpll import readDimacsFile
 
+NBVAR = 'undefined'
+
 def dpllHandler(): 
 	clauses, nbvar, nbclauses = readDimacsFile()
 	print(clauses)
+	global NBVAR
+	NBVAR = nbvar
+	print('NBVAR = ', NBVAR)
 
 	satisfiable = dpllAlgorithm(clauses)
 	print('\nSatisfiability: ', satisfiable)
@@ -13,6 +18,7 @@ def dpllHandler():
 def dpllAlgorithm(clauses):
 	print('\n\nEntered new instance of dpllAlgorithm')
 	print('Current SAT-sentence is: ', clauses)
+	checkIfClausesAreValid(clauses)
 	if containsNoClauses(clauses):
 		return True
 
@@ -45,6 +51,13 @@ def dpllAlgorithm(clauses):
 			print('Returning: ', returning, ' from within else-statement')
 			return returning
 	print('ERROR: Reached the end without returning anything.')
+
+def checkIfClausesAreValid(clauses):
+	for clause in range(len(clauses)):
+		for literal in range(len(clauses[clause])):
+			if int(clauses[clause][literal]) > int(NBVAR):
+				print('Invalid literal is: ', clauses[clause][literal])
+				raise Exception('Clauses contains invalid literals (literals out of range). Range: 0 - ', NBVAR)
 
 def containsNoClauses(clauses):
 	if len(clauses) == 0:			#could also use 'if not clauses', but prefer len(x)==0 because it's more explicit, in that clauses is a list and not a boolean variable
@@ -136,29 +149,4 @@ def clauseContainsLiteral(clause, literal):
 			return True
 	return False
 
-"""
-function dpll (F : Formula) : (SAT, UNSAT)
-begin
-	if F is empty then
-		return SAT
-	else if there is an empty clause in F then
-		return UNSAT
-	else if there is a pure literal l in F then
-		return dpll(F[l → ⊤])
-	else there is a unit clause [l] in F then
-		return dpll(F[l → ⊤])
-	else begin
-		select a literal l occurring in F
-		if dpll(F[l → ⊤]) = SAT then
-			 return SAT
-		else
-			return dpll(F[l → ⊥])
-	end
-end
-
-simplify("@, literal")
-	remove clauses in @ where literal is positive
-	remove -literal from clauses where it appears
-	return new alpha
-"""
 dpllHandler()

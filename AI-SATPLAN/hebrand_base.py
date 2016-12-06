@@ -43,7 +43,7 @@ def groundActions():
         all_actions, init_atoms, goal_atoms = info_from_file()
         grounded_actions = {} ## Alle mulige kombinasjoner
         list_of_atoms = [] #Temporary list used to initialize the grounded_action list
-        name_of_preconds = [] #List of the preconds names
+        name_of_preconds_and_effects = [] #List of the preconds names
         num_of_actions = len(all_actions)
         for i in range (0, num_of_actions):
                 #list_of_atoms += all_actions[i].preconds + all_actions[i].effects #eventuelt plusse på navnet her. #fjernet denne fordi da kom alle små bokstavene med 
@@ -53,14 +53,15 @@ def groundActions():
         
         for n in range (0, num_of_actions):
                 preconds = all_actions[n].preconds #Precondsene til en og en action
+                print('PRECONDS ', preconds)
                 one_precondition = []
                 for i in range(0, len(preconds)):
                         one_precondition += preconds[i] #en og en del av preconds-arrayet
                         name = []
                         for j in range(0, one_precondition.index('(')):
                                 name += one_precondition[j]
-                        if name not in name_of_preconds:
-                                name_of_preconds.append(name) #Legger til navnet til precondition (eks. on, clear,..)
+                        if name not in name_of_preconds_and_effects:
+                                name_of_preconds_and_effects.append(name) #Legger til navnet til precondition (eks. on, clear,..)
                                 variable_list = []
                                 for j in range(one_precondition.index('(')+1, one_precondition.index(')')): #ser på elementene mellom parantesene
                                         if one_precondition[j].isalpha():
@@ -69,10 +70,10 @@ def groundActions():
                                 list_of_combinations = all_combinations(howManyCharacters) #liste med kombinasjoner av alle bokstavene
                                 howManyCombinations = len(list_of_combinations) #hvor mange kombinasjoner
                                 for j in range(0, howManyCombinations):
-                                        for k in range(0, len(name_of_preconds)):
+                                        for k in range(0, len(name_of_preconds_and_effects)):
                                                 create_new_precond = []
-                                                for l in range (0, len(name_of_preconds[k])):
-                                                        create_new_precond.append(name_of_preconds[k][l])
+                                                for l in range (0, len(name_of_preconds_and_effects[k])):
+                                                        create_new_precond.append(name_of_preconds_and_effects[k][l])
                                                 if '(' not in create_new_precond:
                                                         create_new_precond.append('(')
                                                 for m in range(0, len(list_of_combinations[j])):
@@ -84,10 +85,39 @@ def groundActions():
                                                 if joined_create_new_precond not in grounded_actions:
                                                         grounded_actions.add(joined_create_new_precond)
                         one_precondition = []
-##                effects = all_actions[n].effects
-##                one_effect = []
-##                for i in range(0, len(effects)):
-                        
+                effects = all_actions[n].effects
+                print ('EFFECTS ', effects)
+                one_effect = []
+                for i in range(0, len(effects)):
+                		one_effect += effects[i]
+                		name = []
+                		for j in range(0, one_effect.index('(')):
+                				name += one_effect[j]
+                		if name not in name_of_preconds_and_effects:
+                				name_of_preconds_and_effects.append(name)
+                				variable_list = []
+                				for j in range(one_effect.index('(')+1, one_effect.index(')')):
+                						if one_effect[j].isalpha():
+                								variable_list.append(one_effect[j])
+                				howManyCharacters = len(variable_list)
+                				list_of_combinations = all_combinations(howManyCharacters)
+                				howManyCombinations = len(list_of_combinations)
+                				for j in range(0, howManyCombinations):
+                						for k in range(0, len(name_of_preconds_and_effects)):
+                								create_new_effect = []
+                								for l in range(0,len(name_of_preconds_and_effects[k])):
+                										create_new_effect.append(name_of_preconds_and_effects[k][l])
+                								if '(' not in create_new_effect:
+                										create_new_effect.append('(')
+                								for m in range(0, len(list_of_combinations[j])):
+                										create_new_effect.append(list_of_combinations[j][m])
+                										if m != (len(list_of_combinations[j])-1):
+                												create_new_effect.append(',')
+                								create_new_effect.append(')')
+                								joined_create_new_effect = "".join(create_new_effect)
+                								if joined_create_new_effect not in grounded_actions:
+                										grounded_actions.add(joined_create_new_effect)
+                		one_effect = []
         print('grounded_actions with new preconds ', grounded_actions)
 
         

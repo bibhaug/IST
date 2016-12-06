@@ -14,7 +14,11 @@ class Action:
                 return "%s; %s, %s" % (self.name, self.preconds, self.effects)
 		 
 def info_from_file():
+<<<<<<< HEAD
 	f = open('iter1.dat', 'r')
+=======
+	f = open('blocks2.dat', 'r')
+>>>>>>> origin/master
 	line = f.readline()
 	init_atoms = []
 	goal_atoms = []

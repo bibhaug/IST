@@ -1,4 +1,5 @@
 import time
+#Reads DIMACS-file and put the data into a list of lists
 
 class SAT_sentence:
 	def __init__(self):

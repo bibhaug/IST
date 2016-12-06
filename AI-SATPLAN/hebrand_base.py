@@ -39,48 +39,47 @@ def all_combinations(how_many_characters):
         return combination_list # [['A', 'A', 'A'], ...]
 
 def groundActions():
-        #Skal navnet på Action's være med i grounded_actions-lista?
+        #Skal navnet på Action's være med i grounded_actions-lista? (tror ikke det)
         all_actions, init_atoms, goal_atoms = info_from_file()
-        grounded_actions = {} ## Alle mulige kombinasjoner
-        list_of_atoms = [] #Temporary list used to initialize the grounded_action list
-        name_of_preconds_and_effects = [] #List of the preconds names
+        grounded_actions = {} 
+        list_of_atoms = []
+        name_of_preconds_and_effects = []
         num_of_actions = len(all_actions)
         for i in range (0, num_of_actions):
-                #list_of_atoms += all_actions[i].preconds + all_actions[i].effects #eventuelt plusse på navnet her. #fjernet denne fordi da kom alle små bokstavene med 
                 list_of_atoms += (init_atoms + goal_atoms)
         grounded_actions = set(list_of_atoms) #All excisting actions (without duplicates)
         print('grounded_actions to start with ', grounded_actions)
         
-        for n in range (0, num_of_actions):
-                preconds = all_actions[n].preconds #Precondsene til en og en action
+        for n in range (0, num_of_actions): #Go through each action
+                preconds = all_actions[n].preconds
                 print('PRECONDS ', preconds)
                 one_precondition = []
-                for i in range(0, len(preconds)):
-                        one_precondition += preconds[i] #en og en del av preconds-arrayet
-                        name = []
+                for i in range(0, len(preconds)): #go through each precondition
+                        one_precondition += preconds[i]
+                        name = [] # list for creating name for new precondtion
                         for j in range(0, one_precondition.index('(')):
                                 name += one_precondition[j]
-                        if name not in name_of_preconds_and_effects:
-                                name_of_preconds_and_effects.append(name) #Legger til navnet til precondition (eks. on, clear,..)
+                        if name not in name_of_preconds_and_effects: # Excluding already excisting names (hoping its not possible to get on(a,b) AND on(a,b,c))
+                                name_of_preconds_and_effects.append(name) #Add name to list (eks. on, clear,..)
                                 variable_list = []
-                                for j in range(one_precondition.index('(')+1, one_precondition.index(')')): #ser på elementene mellom parantesene
+                                for j in range(one_precondition.index('(')+1, one_precondition.index(')')): #go through elements between parentheses
                                         if one_precondition[j].isalpha():
-                                                variable_list.append(one_precondition[j]) #legger til alle bokstavene mellom parantesene i en liste
-                                howManyCharacters = len(variable_list) #hvor mange bokstaver
-                                list_of_combinations = all_combinations(howManyCharacters) #liste med kombinasjoner av alle bokstavene
-                                howManyCombinations = len(list_of_combinations) #hvor mange kombinasjoner
-                                for j in range(0, howManyCombinations):
-                                        for k in range(0, len(name_of_preconds_and_effects)):
+                                                variable_list.append(one_precondition[j]) #Add all letters between the parantheses to a list
+                                howManyCharacters = len(variable_list) #how many letters do we have
+                                list_of_combinations = all_combinations(howManyCharacters) #get all the combinations of the constants in the domain
+                                howManyCombinations = len(list_of_combinations) #How many combinations do we get
+                                for j in range(0, howManyCombinations): #go through each combination
+                                        for k in range(0, len(name_of_preconds_and_effects)): #go through all the different names we have
                                                 create_new_precond = []
                                                 for l in range (0, len(name_of_preconds_and_effects[k])):
-                                                        create_new_precond.append(name_of_preconds_and_effects[k][l])
+                                                        create_new_precond.append(name_of_preconds_and_effects[k][l]) #add the name to a new precond
                                                 if '(' not in create_new_precond:
-                                                        create_new_precond.append('(')
+                                                        create_new_precond.append('(')  #add the start parenthese to a new precond
                                                 for m in range(0, len(list_of_combinations[j])):
-                                                        create_new_precond.append(list_of_combinations[j][m])
+                                                        create_new_precond.append(list_of_combinations[j][m]) #add the different combinations with a comma between
                                                         if m != (len(list_of_combinations[j])-1):
                                                                 create_new_precond.append(',')
-                                                create_new_precond.append(')')
+                                                create_new_precond.append(')') #Add the end paranthese to the new precond
                                                 joined_create_new_precond = "".join(create_new_precond)
                                                 if joined_create_new_precond not in grounded_actions:
                                                         grounded_actions.add(joined_create_new_precond)
@@ -118,11 +117,11 @@ def groundActions():
                 								if joined_create_new_effect not in grounded_actions:
                 										grounded_actions.add(joined_create_new_effect)
                 		one_effect = []
-        print('grounded_actions with new preconds ', grounded_actions)
+        print('grounded_actions with new elements', grounded_actions)
 
         
 
-constantsInDomain()
+#constantsInDomain()
 groundActions()
 
 	

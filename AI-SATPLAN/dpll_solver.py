@@ -3,23 +3,35 @@ import copy
 
 from dimacs_to_dpll import readDimacsFile
 
+NBVAR = 'undefined'
+
 def dpllHandler(): 
 	clauses, nbvar, nbclauses = readDimacsFile()
 	print(clauses)
+	global NBVAR
+	NBVAR = nbvar
+	print('NBVAR = ', NBVAR)
+	validated_literals = []
+	previous_literal = 'initialize'
 
-	satisfiable = dpllAlgorithm(clauses)
+	satisfiable, reversed_path = dpllAlgorithm(clauses, validated_literals, previous_literal)
+	duplicate_literal = reversed_path.pop(0)	#the first polarity to be assigned gets assigned twice, so just removing duplicate listing (treating symptom rather than cause :P)
 	print('\nSatisfiability: ', satisfiable)
+	print('Polarity of literals: ', reversed_path)
+	print('# of literals with assigned values: ', len(reversed_path))
 
-def dpllAlgorithm(clauses):
+def dpllAlgorithm(clauses, validated_literals, previous_literal):
 	print('\n\nEntered new instance of dpllAlgorithm')
 	print('Current SAT-sentence is: ', clauses)
+	checkIfClausesAreValid(clauses)
 	if containsNoClauses(clauses):
-		return True
+		validated_literals.append(previous_literal)
+		return True, validated_literals
 
 	elif containsEmptyClause(clauses):
 		print('EMPTY CLAUSE FOUND -------------------------------------------------------')
 		print('Returning False because of empty clause')
-		return False
+		return False, validated_literals
 
 	#"""
 	#contains_pure_literal, pure_literal = containsPureLiteral(clauses, nbvar) #Need to re-add nbvar to dpllAlgorithm(clauses, nbvar) before this can be used
@@ -27,24 +39,44 @@ def dpllAlgorithm(clauses):
 	#	literal = pure_literal
 	#	return dpllAlgorithm(simplify(clauses, literal))
 	#"""
-	#contains_unit_clause, unit_clause_literal = containsUnitClause(clauses)
-	#if contains_unit_clause:
-	#	literal = unit_clause_literal
-	#	print('Unit_clause literal to simplify is: ', literal)
-	#	return dpllAlgorithm(simplify(clauses, literal))
+	contains_unit_clause, unit_clause_literal = containsUnitClause(clauses)
+	if contains_unit_clause:
+		literal = unit_clause_literal
+		print('Unit_clause literal to simplify is: ', literal)
+		satisfiability, temp_validated_literals_list = dpllAlgorithm(simplify(clauses, literal), validated_literals, literal)
+		if satisfiability == True:
+			temp_validated_literals_list.append(literal)
+			print('Returning True form unit_clause')
+			return True, temp_validated_literals_list
+		else:
+			return False, temp_validated_literals_list
 
 	else:
 		literal = selectRandomLiteral(clauses)
 		print('Literal to simplify is: ', literal)
-		if dpllAlgorithm(simplify(clauses, literal)):
+		satisfiability, temp_validated_literals_list = dpllAlgorithm(simplify(clauses, literal), validated_literals, literal)
+		if satisfiability == True:
+			temp_validated_literals_list.append(literal)
 			print('Returning True')
-			return True
+			return True, temp_validated_literals_list
 		else:
 			print('Entered else-statement, trying with negated literal on CNF-sentence: ', clauses)
-			returning = dpllAlgorithm(simplify(clauses, negateLiteral(literal)))
-			print('Returning: ', returning, ' from within else-statement')
-			return returning
+			negated_literal = negateLiteral(literal)
+			satisfiability, temp_validated_literals_list = dpllAlgorithm(simplify(clauses, negated_literal), validated_literals, negated_literal)
+			print('Returning: ', satisfiability, ' from within else-statement')
+			if satisfiability == True:
+				temp_validated_literals_list.append(negated_literal)
+				return True, temp_validated_literals_list
+			else:
+				return False, temp_validated_literals_list
 	print('ERROR: Reached the end without returning anything.')
+
+def checkIfClausesAreValid(clauses):
+	for clause in range(len(clauses)):
+		for literal in range(len(clauses[clause])):
+			if int(clauses[clause][literal]) > int(NBVAR):
+				print('Invalid literal is: ', clauses[clause][literal])
+				raise Exception('Clauses contains invalid literals (literals out of range). Range: 0 - ', NBVAR)
 
 def containsNoClauses(clauses):
 	if len(clauses) == 0:			#could also use 'if not clauses', but prefer len(x)==0 because it's more explicit, in that clauses is a list and not a boolean variable
@@ -121,13 +153,14 @@ def removeNegatedLiteralFromClauses(clauses, negated_literal):
 def negateLiteral(literal):
 	print('Original literal was ', literal)
 	if literal[0] == '-':
-		literal.lstrip('-')
-		print('Negated literal is ', literal)
-		return literal
+		negated_literal = literal.lstrip('-')
+	#if literal[0] == '-':
+	#	print('Negated literal is ', literal[1])
+	#	return literal[1]
 	else:
 		negated_literal = '-' + literal
-		print('Negated literal is ', negated_literal)
-		return negated_literal
+	print('Negated literal is ', negated_literal)
+	return negated_literal
 
 def clauseContainsLiteral(clause, literal):
 	for l in range(len(clause)):
@@ -135,29 +168,4 @@ def clauseContainsLiteral(clause, literal):
 			return True
 	return False
 
-"""
-function dpll (F : Formula) : (SAT, UNSAT)
-begin
-	if F is empty then
-		return SAT
-	else if there is an empty clause in F then
-		return UNSAT
-	else if there is a pure literal l in F then
-		return dpll(F[l → ⊤])
-	else there is a unit clause [l] in F then
-		return dpll(F[l → ⊤])
-	else begin
-		select a literal l occurring in F
-		if dpll(F[l → ⊤]) = SAT then
-			 return SAT
-		else
-			return dpll(F[l → ⊥])
-	end
-end
-
-simplify("@, literal")
-	remove clauses in @ where literal is positive
-	remove -literal from clauses where it appears
-	return new alpha
-"""
 dpllHandler()

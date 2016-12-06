@@ -1,5 +1,6 @@
 import time
-
+#Reads DIMACS-file and put the data into a list of lists
+"""
 class SAT_sentence:
 	def __init__(self):
 		self.clauses = []
@@ -13,9 +14,10 @@ class SAT_sentence:
 class Clause:
 	def __init__(self):
 		self.clause = []
-
+"""
 def readDimacsFile():
-	f = open('DIMACS_test2.dat', 'r')
+	#f = open('DIMACS_test2.dat', 'r')
+	f = open('aim-50-1_6-yes1-4.dat', 'r')
 	line = f.readline()
 	#current_clause = Clause()
 	#clauses = SAT_sentence()

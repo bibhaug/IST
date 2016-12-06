@@ -27,11 +27,11 @@ def dpllAlgorithm(clauses):
 	#	literal = pure_literal
 	#	return dpllAlgorithm(simplify(clauses, literal))
 	#"""
-	#contains_unit_clause, unit_clause_literal = containsUnitClause(clauses)
-	#if contains_unit_clause:
-	#	literal = unit_clause_literal
-	#	print('Unit_clause literal to simplify is: ', literal)
-	#	return dpllAlgorithm(simplify(clauses, literal))
+	contains_unit_clause, unit_clause_literal = containsUnitClause(clauses)
+	if contains_unit_clause:
+		literal = unit_clause_literal
+		print('Unit_clause literal to simplify is: ', literal)
+		return dpllAlgorithm(simplify(clauses, literal))
 
 	else:
 		literal = selectRandomLiteral(clauses)
@@ -121,13 +121,14 @@ def removeNegatedLiteralFromClauses(clauses, negated_literal):
 def negateLiteral(literal):
 	print('Original literal was ', literal)
 	if literal[0] == '-':
-		literal.lstrip('-')
-		print('Negated literal is ', literal)
-		return literal
+		negated_literal = literal.lstrip('-')
+	#if literal[0] == '-':
+	#	print('Negated literal is ', literal[1])
+	#	return literal[1]
 	else:
 		negated_literal = '-' + literal
-		print('Negated literal is ', negated_literal)
-		return negated_literal
+	print('Negated literal is ', negated_literal)
+	return negated_literal
 
 def clauseContainsLiteral(clause, literal):
 	for l in range(len(clause)):

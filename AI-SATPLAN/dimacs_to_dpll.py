@@ -16,7 +16,7 @@ class Clause:
 		self.clause = []
 
 def readDimacsFile():
-	f = open('DIMACS_test2.dat', 'r')
+	f = open('DIMACS_test3.dat', 'r')
 	line = f.readline()
 	#current_clause = Clause()
 	#clauses = SAT_sentence()

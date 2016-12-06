@@ -11,21 +11,27 @@ def dpllHandler():
 	global NBVAR
 	NBVAR = nbvar
 	print('NBVAR = ', NBVAR)
+	validated_literals = []
+	previous_literal = 'initialize'
 
-	satisfiable = dpllAlgorithm(clauses)
+	satisfiable, reversed_path = dpllAlgorithm(clauses, validated_literals, previous_literal)
+	duplicate_literal = reversed_path.pop(0)	#the first polarity to be assigned gets assigned twice, so just removing duplicate listing (treating symptom rather than cause :P)
 	print('\nSatisfiability: ', satisfiable)
+	print('Polarity of literals: ', reversed_path)
+	print('# of literals with assigned values: ', len(reversed_path))
 
-def dpllAlgorithm(clauses):
+def dpllAlgorithm(clauses, validated_literals, previous_literal):
 	print('\n\nEntered new instance of dpllAlgorithm')
 	print('Current SAT-sentence is: ', clauses)
 	checkIfClausesAreValid(clauses)
 	if containsNoClauses(clauses):
-		return True
+		validated_literals.append(previous_literal)
+		return True, validated_literals
 
 	elif containsEmptyClause(clauses):
 		print('EMPTY CLAUSE FOUND -------------------------------------------------------')
 		print('Returning False because of empty clause')
-		return False
+		return False, validated_literals
 
 	#"""
 	#contains_pure_literal, pure_literal = containsPureLiteral(clauses, nbvar) #Need to re-add nbvar to dpllAlgorithm(clauses, nbvar) before this can be used
@@ -37,19 +43,32 @@ def dpllAlgorithm(clauses):
 	if contains_unit_clause:
 		literal = unit_clause_literal
 		print('Unit_clause literal to simplify is: ', literal)
-		return dpllAlgorithm(simplify(clauses, literal))
+		satisfiability, temp_validated_literals_list = dpllAlgorithm(simplify(clauses, literal), validated_literals, literal)
+		if satisfiability == True:
+			temp_validated_literals_list.append(literal)
+			print('Returning True form unit_clause')
+			return True, temp_validated_literals_list
+		else:
+			return False, temp_validated_literals_list
 
 	else:
 		literal = selectRandomLiteral(clauses)
 		print('Literal to simplify is: ', literal)
-		if dpllAlgorithm(simplify(clauses, literal)):
+		satisfiability, temp_validated_literals_list = dpllAlgorithm(simplify(clauses, literal), validated_literals, literal)
+		if satisfiability == True:
+			temp_validated_literals_list.append(literal)
 			print('Returning True')
-			return True
+			return True, temp_validated_literals_list
 		else:
 			print('Entered else-statement, trying with negated literal on CNF-sentence: ', clauses)
-			returning = dpllAlgorithm(simplify(clauses, negateLiteral(literal)))
-			print('Returning: ', returning, ' from within else-statement')
-			return returning
+			negated_literal = negateLiteral(literal)
+			satisfiability, temp_validated_literals_list = dpllAlgorithm(simplify(clauses, negated_literal), validated_literals, negated_literal)
+			print('Returning: ', satisfiability, ' from within else-statement')
+			if satisfiability == True:
+				temp_validated_literals_list.append(negated_literal)
+				return True, temp_validated_literals_list
+			else:
+				return False, temp_validated_literals_list
 	print('ERROR: Reached the end without returning anything.')
 
 def checkIfClausesAreValid(clauses):

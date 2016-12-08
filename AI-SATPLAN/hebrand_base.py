@@ -126,6 +126,6 @@ def hebrandBase():
         print('This is the Hebrand Base: ', hebrand_base)
         return hebrand_base
         
-#hebrandBase()
+hebrandBase()
 
 	

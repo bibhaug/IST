@@ -1,0 +1,1 @@
+#her ender vi opp med å finne ut hvilke actions som ble gjort og printer de til skjerm

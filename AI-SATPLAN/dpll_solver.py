@@ -14,16 +14,19 @@ def dpllHandler():
 	validated_literals = []
 	previous_literal = 'initialize'
 
-	satisfiable, reversed_path = dpllAlgorithm(clauses, validated_literals, previous_literal)
-	duplicate_literal = reversed_path.pop(0)	#the first polarity to be assigned gets assigned twice, so just removing duplicate listing (treating symptom rather than cause :P)
-	print('\nSatisfiability: ', satisfiable)
-	print('Polarity of literals: ', reversed_path)
-	print('# of literals with assigned values: ', len(reversed_path))
+	satisfiability, polarity_of_literals = dpllAlgorithm(clauses, validated_literals, previous_literal)
+	print('jrslufhrikh')
+	duplicate_literal = polarity_of_literals.pop(0)	#the first polarity to be assigned gets assigned twice, so just removing a duplicate listing (treating symptom rather than cause :P)
+	print('\nSatisfiability: ', satisfiability)
+	print('Polarity of literals: ', polarity_of_literals)
+	print('# of literals with assigned values: ', len(polarity_of_literals))
+
+	#return satisfiability, polarity_of_literals
 
 def dpllAlgorithm(clauses, validated_literals, previous_literal):
 	print('\n\nEntered new instance of dpllAlgorithm')
 	print('Current SAT-sentence is: ', clauses)
-	checkIfClausesAreValid(clauses)
+	checkIfClausesAreValid(clauses)	#Can be removed? Needed when we had a problem with unvalid literals (literals out of range)
 	if containsNoClauses(clauses):
 		validated_literals.append(previous_literal)
 		return True, validated_literals
@@ -33,20 +36,26 @@ def dpllAlgorithm(clauses, validated_literals, previous_literal):
 		print('Returning False because of empty clause')
 		return False, validated_literals
 
-	#"""
-	#contains_pure_literal, pure_literal = containsPureLiteral(clauses, nbvar) #Need to re-add nbvar to dpllAlgorithm(clauses, nbvar) before this can be used
-	#elif contains_pure_literal:
+	#contains_pure_literal, pure_literal = containsPureLiteral(clauses)
+	#if contains_pure_literal:
 	#	literal = pure_literal
-	#	return dpllAlgorithm(simplify(clauses, literal))
-	#"""
+	#	print('Pure_literal to simplify is: ', literal)
+	#	satisfiable, temp_validated_literals_list = dpllAlgorithm(simplify(clauses, literal), validated_literals, literal)
+	#	if satisfiable:
+	#		temp_validated_literals_list.append(literal)
+	#		print('Returning True from pure_literal')
+	#		return True, temp_validated_literals_list
+	#	else:
+	#		return False, temp_validated_literals_list
+
 	contains_unit_clause, unit_clause_literal = containsUnitClause(clauses)
 	if contains_unit_clause:
 		literal = unit_clause_literal
 		print('Unit_clause literal to simplify is: ', literal)
-		satisfiability, temp_validated_literals_list = dpllAlgorithm(simplify(clauses, literal), validated_literals, literal)
-		if satisfiability == True:
+		satisfiable, temp_validated_literals_list = dpllAlgorithm(simplify(clauses, literal), validated_literals, literal)
+		if satisfiable:
 			temp_validated_literals_list.append(literal)
-			print('Returning True form unit_clause')
+			print('Returning True from unit_clause')
 			return True, temp_validated_literals_list
 		else:
 			return False, temp_validated_literals_list
@@ -86,26 +95,49 @@ def containsNoClauses(clauses):
 
 def containsEmptyClause(clauses):
 	for i in range(len(clauses)):
-		if (len(clauses[i]) == 1):	#len(x) == 1 means there's only a 0 left in the clause, aka. it's 
+		if (len(clauses[i]) == 1):	#len(x) == 1 means there's only a 0 left in the clause, aka. it's empty 
 			return True
 	return False
 
-"""
-#for-løkkene under må sjekkes hvis implementasjonen skal virke (clauses[clause])
-def containsPureLiteral(clauses, nbvar):	#literal that only occurs with one polarity
-	#need to check all literals (naturally stop checking if we find a pure literal)
-	#need to keep track of which literals we already checked
-	checked_literals = []
-	current_literal = 'initialize'
-	polarity = 'initialize'
-	for literal_number_i in range(1, nbvar+1):
-		current_literal = literal_number_i
-		for clause in range(0, len(clauses)):
-			for literal in range(0, len(clause)):
-				if literal == current_literal
+CHECKED_LITERALS = []
 
-	return True/False and literal
-"""
+def containsPureLiteral(clauses):	#literal that only occurs with one polarity
+	#need to check all literals (naturally stop checking if we find a pure literal)
+	#need to keep track of which literals we already checked. 
+	if len(CHECKED_LITERALS) == int(NBVAR):	#If all literals have been checked, there's no point in continue checking
+		return False, 'nopureliteral'
+
+	for literal_to_check in range(1, (int(NBVAR)+1)):
+		if literalNotCheckedBefore(literal_to_check):
+			CHECKED_LITERALS.append(literal_to_check)
+			negated_literal_to_check = negateLiteral(str(literal_to_check))
+			if literalExistsInClauses(clauses, literal_to_check):
+				for clause in range(len(clauses)):
+					for literal in range(len(clauses[clause])):
+						if clauses[clause][literal] == negated_literal_to_check:
+							return False, 'nopureliteral'
+				return True, literal_to_check
+			elif literalExistsInClauses(clauses, negated_literal_to_check):
+				for clause in range(len(clauses)):
+					for literal in range(len(clauses[clause])):
+						if clauses[clause][literal] == literal_to_check:
+							return False, 'nopureliteral'
+				return True, negated_literal_to_check
+
+	return False, 'nopureliteral'
+
+def literalExistsInClauses(clauses, literal):
+	for clause in range(len(clauses)):
+		for i in range(len(clauses[clause])):
+			if clauses[clause][i] == literal:
+				return True
+	return False
+
+def literalNotCheckedBefore(literal):
+	if literal in CHECKED_LITERALS: #Er dette en gyldig command???
+		return False
+	else:
+		return True
 
 def containsUnitClause(clauses):
 	for i in range(len(clauses)):
@@ -115,7 +147,7 @@ def containsUnitClause(clauses):
 	return False, 'foobar'
 
 def selectRandomLiteral(clauses):
-	return clauses[0][0]
+	return clauses[0][0]	#the randomness of this function can be heavily critized
 
 def simplify(clauses, literal):
 	clauses1 = removeClausesContainingLiteral(clauses, literal)
@@ -128,7 +160,6 @@ def removeClausesContainingLiteral(clauses, literal):
 		#print('Going through for-loop for the ', clause, ' time.')
 		if clauseContainsLiteral(clauses[clause], literal):
 			#print('Clause #', clause, ' contains literal ', literal)
-			#removed_clause = clauses.pop(clause)	#can this mess with the for-loop and the len(clauses) statement??? #changed from list.remove(x) to list.pop(index)
 			indexes_to_remove.append(clause)
 	print('Indexes to remove: ', indexes_to_remove)
 
@@ -140,13 +171,12 @@ def removeClausesContainingLiteral(clauses, literal):
 	print('CNF-sentence after clause-removal: ', copy_of_clauses)
 	return copy_of_clauses
 
-
 def removeNegatedLiteralFromClauses(clauses, negated_literal):
 	copy_of_clauses = copy.deepcopy(clauses)
 	for clause in range(len(copy_of_clauses)):
 		if clauseContainsLiteral(copy_of_clauses[clause], negated_literal):
 			print('Removing negated_literal in clause #', clause)
-			copy_of_clauses[clause].remove(negated_literal)	#here list.remove(x) is correct since we want to remove one specific object, not an entire list
+			copy_of_clauses[clause].remove(negated_literal)
 	print('CNF-sentence after negated_literal-removal: ', copy_of_clauses)
 	return copy_of_clauses
 
@@ -154,9 +184,6 @@ def negateLiteral(literal):
 	print('Original literal was ', literal)
 	if literal[0] == '-':
 		negated_literal = literal.lstrip('-')
-	#if literal[0] == '-':
-	#	print('Negated literal is ', literal[1])
-	#	return literal[1]
 	else:
 		negated_literal = '-' + literal
 	print('Negated literal is ', negated_literal)

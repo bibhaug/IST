@@ -14,7 +14,7 @@ class Action:
                 return "%s; %s, %s" % (self.name, self.preconds, self.effects)
 		 
 def info_from_file():
-	f = open('blocks2.dat', 'r')
+	f = open('blocks.dat', 'r')
 	line = f.readline()
 	init_atoms = []
 	goal_atoms = []

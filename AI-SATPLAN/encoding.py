@@ -1,11 +1,8 @@
 from hebrand_base import hebrandBase
 
-#tar hebrand base og gir alle uttrykkene en verdi (1,2,3..)
-
 def give_values_to_hebrandBase():
-        hebrand_base_set = hebrandBase() #hebrand_base is keys in the dictionary
+        hebrand_base_set = hebrandBase() 
         hebrand_base_dict = dict.fromkeys(hebrand_base_set, 0)
-        #hebrand_base_dict = {e:0 for e in hebrand_base_set}
         print('Hebrand_base_dict ', hebrand_base_dict)
         value = 1
         hebrand_base_dict_copy = {}
@@ -15,11 +12,35 @@ def give_values_to_hebrandBase():
         print('Dictionary ', hebrand_base_dict_copy)
         return hebrand_base_dict_copy
 
-#def initial_state_SAT():
-#	lag en liste med alle de som skal få den verdien fra funksjonen over, og resten får motsatt verdi.
-        
+
+def encoding_handler():
+        hebrand_base = hebrandBase()
+        all_actions, initil_state, goal_state = info_from_file()
+        initial_state_CNF = initil_state_SAT(hebrand_base)
 
 
+
+#def initial_state_SAT(henbrand_base): 
+Gå gjennom hebrand base, sjekk for negated initil_state (de som er omvent av init_atoms)
+slett de fra hebrand.
+da har vi slettet negated av init, og får bare negated av alt annet.
+slette alle som ikke er init og som er positive.
+return clauses (list med strings)
+
+def goal_state_CNF(goal_states):
+        Vil ha det på liste-form
+        return goal_states_list
+
+
+def SAT_to_CNF(): #kanskje to forskjellige funksjoner for punkt 3 og 4
+
+#deale med tids-stg
+#for løkke der i er tidssteget
+#dpll inni forløkken og sjekke for cnf setningen du har der og da.
+
+
+
+#statene endres i DPLL?
 
 #def createSATsentence():
 

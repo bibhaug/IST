@@ -123,9 +123,16 @@ def hebrandBase():
         grounded_atoms = groundAtoms_init_goal()
         grounded_actions = groundActions()
         hebrand_base = grounded_atoms | grounded_actions
-        print('This is the Hebrand Base: ', hebrand_base)
         return hebrand_base
-        
-hebrandBase()
+
+def actionNames():
+        all_actions, init_atoms, goal_atoms = info_from_file()
+        names = []
+        for i in range(0, len(all_actions)):
+                
+                names.append(all_actions[i].name)
+        return names
+
+#hebrandBase()
 
 	

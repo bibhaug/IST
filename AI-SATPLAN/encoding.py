@@ -37,16 +37,19 @@ def createSATDict():
                 value += 1
         return hebrand_base_dict_copy
 
-def extendSatSet(horizon):
+def extendSatSet(horizon, old_sat_set):
         #utvid med ett timestep
         #return sat_set_dict
         h = horizon
-        old_sat_dict = createSATDict()
-        new_sat_dict = {}
-        for key, val in old_sat_dict.items():
+        sat_dict = old_sat_set
+        new_keys = []
+        max_values_key = max(sat_dict, key = sat_dict.get)
+        max_value = sat_dict[max_values_key]
+        for key, val in sat_dict.items():
                 new_key = key[:-1] + str(h)
-                new_sat_dict[new_key] = val
-        print('new_sat_set ', new_sat_dict)
+                new_keys.append(new_key)
+        for i in range(0,len(new_keys)):
+                sat_dict[new_keys[i]] = max_value + (i + 1)
         return new_sat_dict
 
 
@@ -103,5 +106,5 @@ def extendSatSet(horizon):
 
 
 #ConvertToDIMACSsyntax()
-#extendSatSet(2)
+extendSatSet(2, createSATDict())
 #createSATDict()

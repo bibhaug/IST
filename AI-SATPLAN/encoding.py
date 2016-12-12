@@ -5,6 +5,7 @@ from hebrand_base import actionNames
 from read_pddl_domain_file import info_from_file
 
 def encodingHandler():
+<<<<<<< HEAD
 		initial_sat_set = createSatDict()
 		#print('Initial sat_set is: ', initial_sat_set)
 		all_actions, init_atoms, goal_state = info_from_file()
@@ -13,6 +14,14 @@ def encodingHandler():
 		#print('Length of initial CNF is: ', len(initial_state_CNF))
 
 #         her kommer en while løkke som kaller dpll og slikt
+=======
+        initial_sat_set = createSatDict()
+        #print('Initial sat_set is: ', initial_sat_set)
+        all_actions, init_atoms, goal_state = info_from_file()
+        initial_state_CNF = createInitialStateCnfSentence(initial_sat_set, init_atoms)
+        print('Initial cnf is: ', initial_state_CNF)
+        #print('Length of initial CNF is: ', len(initial_state_CNF))
+>>>>>>> refs/remotes/origin/bibh
 
 # def linear_encoder(horizon): #lager final sat_sentence for hver horizon, og returner til encoding_handler som kaller opp dpll() og slikt
 #         #rekkefølgen ting må gjøres i for å lage sat_sentence, bruker mange av hjelpefunksjonene under
@@ -185,12 +194,30 @@ def extendConversionDicts(horizon, old_atoms_to_num_dict, old_num_to_atoms_dict)
 
 
 
-# def createInitialStateCnfSentence(sat_set): #denne kjøres bare en gang 
-#         Gå gjennom hebrand base, sjekk for negated initial_state (de som er omvent av init_atoms)
-#         slett de fra hebrand.
-#         da har vi slettet negated av init, og får bare negated av alt annet.
-#         slette alle som ikke er init og som er positive.
-#         return initial_states_list #list med strings
+def createInitialStateCnfSentence(sat_set_dict, init_states):
+        init_cnf = []
+        single_object_clause = ['init']
+        copy_sat_set_dict = copy.deepcopy(sat_set_dict)
+        copy_init_states = copy.deepcopy(init_states)
+        #print('Copy of sat_set_dict: ', copy_sat_set_dict)
+        print('Init states: ', init_states)
+        for atom in range(len(copy_init_states)):
+                copy_init_states[atom] = copy_init_states[atom] + '0'
+                for key, val in copy_sat_set_dict.items():
+                        print('Copy_init_states[atom]: ', copy_init_states[atom])                               
+                        if key == copy_init_states[atom]:
+                                print('ATOM MATCH FOUND')
+                                single_object_clause = key
+                                print('Single_object_clause match is: ', single_object_clause)
+                                init_cnf.append(single_object_clause)
+                                print('Init_CNF after match append: ', init_cnf)
+                        else:
+                                #print('Atom match not found')
+                                single_object_clause = '-' + key
+                                #print('Single object clause is: ', single_object_clause)
+                                init_cnf.append(single_object_clause)
+        print('Init_CNF: ', init_cnf)
+        return init_cnf
 
 # def createGoalStateCnfSentence(goal_states, horizon):
 >>>>>>> refs/remotes/origin/kari

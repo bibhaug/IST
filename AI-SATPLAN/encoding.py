@@ -97,7 +97,7 @@ def extendConversionDicts(horizon, old_atoms_to_num_dict, old_num_to_atoms_dict)
                                 num_dict[str(val2)] = key2
         print('This is Atom Dict: ', atom_dict)
         print('This is Num Dict: ', num_dict)
-        return atom_dict
+        return atom_dict, num_dict
 
 
 
@@ -146,14 +146,15 @@ def actionSatToCnf(sat_sentence):
         print('CNF-expression: ',cnf_expression)
 #         return cnf_expression #cnf-expression er en liste i liste  [[1,2,8],[-3,-4,-6]] der komma tilsvarer "or"
 
-# def frameAxiomSatToCnf(sat_sentence, current_sat_dict):
+# def frameAxiomSatToCnf(sat_sentence, current_atom_dict, current_num_dict):
 #         #sat_sentence = [['23'], ['30']] (der 23 er et atom fra hebrand base og 30 er en action)
 #         atom = sat_sentence[0]
 #         atom_negated = '-' + atom[0]
 #         action = sat_sentence[1]
 #         action_negated = '-' + action[0]
 #         atom_value_increased_time_step = atom[0]
-#         for key, val in current_sat_dict:
+#         for key, val in current_num_dict:
+
 
 
 

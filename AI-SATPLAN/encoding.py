@@ -24,10 +24,16 @@ def encodingHandler():
 
 #         return sat_sentence
 
+<<<<<<< HEAD
 def createSatDict():
+=======
+def createConversionDicts():
+>>>>>>> refs/remotes/origin/kari
         #I had to use lists to change the names (since you can't iterate through a set)
         #In case we want the values in the dictionary to be integers instead of strings: dict_with_ints = dict((k,int(v)) for k,v in dict_with_strs.iteritems())
+        #Atoms_to_numbers_dict 
 
+<<<<<<< HEAD
 		action_names = actionNames()
 		for i in range(0, len(action_names)):
 				action_names[i] = action_names[i] + '0'
@@ -100,6 +106,94 @@ def createInitialStateCnfSentence(sat_set_dict, init_states):
 		print('Init_CNF: ', init_cnf)
 		return init_cnf
 		# def createGoalStateCnfSentence(goal_states, horizon):
+=======
+        action_names = actionNames()
+        for i in range(0, len(action_names)):
+                action_names[i] = action_names[i] + '0'
+        hebrand_base_set = hebrandBase()
+        hebrand_base_list = list(hebrand_base_set)
+        for i in range (0, len(hebrand_base_list)):
+                hebrand_base_list[i] = hebrand_base_list[i] + '0'
+        hebrand_base_dict = dict.fromkeys(hebrand_base_list, 0)
+        for i in range (0, len(action_names)):
+                hebrand_base_dict[action_names[i]] = 0
+        value = 1
+        atoms_to_numbers_dict = {}
+        numbers_to_atoms_dict = {}
+        for key, val in hebrand_base_dict.items():
+                val1 = str(value)
+                val2 = '-' + str(value)
+                if key.startswith('-'):
+                        key1 = key
+                        key2 = key[1:]
+                        if key1 not in atoms_to_numbers_dict or key2 not in atoms_to_numbers_dict:
+                                atoms_to_numbers_dict[key2] = val1
+                                atoms_to_numbers_dict[key1] = val2
+                                numbers_to_atoms_dict[val1] = key2
+                                numbers_to_atoms_dict[val2] = key1
+                                value += 1 
+                else:
+                        key1 = key
+                        key2 = '-' + key
+                        if key1 not in atoms_to_numbers_dict or key2 not in atoms_to_numbers_dict:
+                                atoms_to_numbers_dict[key1] = val1
+                                atoms_to_numbers_dict[key2] = val2
+                                numbers_to_atoms_dict[val1] = key1
+                                numbers_to_atoms_dict[val2] = key2
+
+                                value += 1 
+        print('SAT_DICTIONARY: ', atoms_to_numbers_dict)
+        print('NUM_DiCTIONARY: ', numbers_to_atoms_dict)
+
+
+        return atoms_to_numbers_dict, numbers_to_atoms_dict
+
+def extendConversionDicts(horizon, old_atoms_to_num_dict, old_num_to_atoms_dict):
+        #utvid med ett timestep
+        #return sat_set_dict
+        h = horizon
+        atom_dict = old_atoms_to_num_dict
+        num_dict = old_num_to_atoms_dict
+        new_keys = []
+        max_values_key = max(atom_dict, key = atom_dict.get)
+        max_value = atom_dict[max_values_key]
+        for key, val in atom_dict.items():
+                new_key = key[:-1] + str(h)
+                new_keys.append(new_key)
+        for i in range(0,len(new_keys)):
+                val1 = int(max_value) + (i + 1)
+                val2 = -val1
+                if new_keys[i].startswith('-'):
+                        key1 = new_keys[i]
+                        key2 = new_keys[i][1:]
+                        if key1 not in atom_dict or key2 not in atom_dict:
+                                atom_dict[key1] = str(val2)
+                                atom_dict[key2] = str(val1)
+                                num_dict[str(val1)] = key2
+                                num_dict[str(val2)] = key1
+                else:
+                        key1 = key
+                        key2 = '-' + key
+                        if key1 not in atom_dict or key2 not in atom_dict:
+                                atom_dict[key1] = str(val1)
+                                atom_dict[key2] = str(val2)
+                                num_dict[str(val1)] = key1
+                                num_dict[str(val2)] = key2
+        print('This is Atom Dict: ', atom_dict)
+        print('This is Num Dict: ', num_dict)
+        return atom_dict
+
+
+
+# def createInitialStateCnfSentence(sat_set): #denne kjøres bare en gang 
+#         Gå gjennom hebrand base, sjekk for negated initial_state (de som er omvent av init_atoms)
+#         slett de fra hebrand.
+#         da har vi slettet negated av init, og får bare negated av alt annet.
+#         slette alle som ikke er init og som er positive.
+#         return initial_states_list #list med strings
+
+# def createGoalStateCnfSentence(goal_states, horizon):
+>>>>>>> refs/remotes/origin/kari
 #         Vil ha det på liste-form
 #         return goal_states_list
 
@@ -119,7 +213,7 @@ def createInitialStateCnfSentence(sat_set_dict, init_states):
 #         return at_least_one_axioms_cnf
 
 
-#def satToCnf(sat_sentence): sat_sentence = [[action], [preconds], [effects]] der [action] er et tall, [preconds] og [effects] er på formen [1,2,8,..] (der komma tilsvarer "or")
+#def satToCnf(sat_sentence): sat_sentence = [[action], [preconds], [effects]] der [action] er et tall, [preconds] og [effects] er på formen [1,2,8,..] (der komma tilsvarer "and")
 #def actionSatToCnf():
 def actionSatToCnf(sat_sentence):
         #sat_sentence = [['23'], ['2','15', '36'], ['-3', '2', '-36']]
@@ -135,7 +229,21 @@ def actionSatToCnf(sat_sentence):
                 disjunction = [negated_action, effects[i]]
                 cnf_expression.append(disjunction)
         print('CNF-expression: ',cnf_expression)
-#         return cnf_expression #cnf-expression er en liste i liste  [[1,2,8],[-3,-4,-6]] der komma tilsvarer "and"
+#         return cnf_expression #cnf-expression er en liste i liste  [[1,2,8],[-3,-4,-6]] der komma tilsvarer "or"
+
+# def frameAxiomSatToCnf(sat_sentence, current_sat_dict):
+#         #sat_sentence = [['23'], ['30']] (der 23 er et atom fra hebrand base og 30 er en action)
+#         atom = sat_sentence[0]
+#         atom_negated = '-' + atom[0]
+#         action = sat_sentence[1]
+#         action_negated = '-' + action[0]
+#         atom_value_increased_time_step = atom[0]
+#         for key, val in current_sat_dict:
+
+
+
+#         cnf_expression = []
+
 
 
 # #for løkke der i er tidssteget
@@ -160,7 +268,8 @@ def actionSatToCnf(sat_sentence):
 
 
 #ConvertToDIMACSsyntax()
-#extendSatSet(2, createSATDict())
-#createSATDict()
+atom_to_num, num_to_atom = createConversionDicts()
+extendConversionDicts(2, atom_to_num, num_to_atom)
+#createConversionDicts()
 #actionSatToCnf()
 encodingHandler()

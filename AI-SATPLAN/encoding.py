@@ -20,6 +20,8 @@ from hebrand_base import actionNames
 
 def createSATDict():
         #I had to use lists to change the names (since you can't iterate through a set)
+        #In case we want the values in the dictionary to be integers instead of strings: dict_with_ints = dict((k,int(v)) for k,v in dict_with_strs.iteritems())
+
         action_names = actionNames()
         for i in range(0, len(action_names)):
                 action_names[i] = action_names[i] + '0'
@@ -33,8 +35,21 @@ def createSATDict():
         value = 1
         hebrand_base_dict_copy = {}
         for key, val in hebrand_base_dict.items():
-                hebrand_base_dict_copy[key] = value
-                value += 1
+                if key.startswith('-'):
+                        key1 = key
+                        key2 = key[1:]
+                        if key1 not in hebrand_base_dict_copy or key2 not in hebrand_base_dict_copy:
+                                hebrand_base_dict_copy[key2] = str(value)
+                                hebrand_base_dict_copy[key1] = '-' + str(value)
+                                value += 1 
+                else:
+                        key1 = key
+                        key2 = '-' + key
+                        if key1 not in hebrand_base_dict_copy or key2 not in hebrand_base_dict_copy:
+                                hebrand_base_dict_copy[key1] = str(value)
+                                hebrand_base_dict_copy[key2] = '-' + str(value)
+                                value += 1 
+        print('SAT_DICTIONARY: ', hebrand_base_dict_copy)
         return hebrand_base_dict_copy
 
 def extendSatSet(horizon, old_sat_set):
@@ -81,8 +96,24 @@ def extendSatSet(horizon, old_sat_set):
 #         return at_least_one_axioms_cnf
 
 
-# def satToCnf(sat_sentence):
-#         return cnf_expression #cnf-expression er en liste i liste
+#def satToCnf(sat_sentence): sat_sentence = [[action], [preconds], [effects]] der [action] er et tall, [preconds] og [effects] er på formen [1,2,8,..] (der komma tilsvarer "or")
+#def actionSatToCnf():
+def actionSatToCnf(sat_sentence):
+        #sat_sentence = [['23'], ['2','15', '36'], ['-3', '2', '-36']]
+        action = sat_sentence[0]
+        negated_action = '-' + action[0]
+        preconds = sat_sentence[1]
+        effects = sat_sentence[2]
+        cnf_expression = []
+        for i in range(0, len(preconds)):
+                disjunction = [negated_action, preconds[i]]
+                cnf_expression.append(disjunction)
+        for i in range(0, len(effects)):
+                disjunction = [negated_action, effects[i]]
+                cnf_expression.append(disjunction)
+        print('CNF-expression: ',cnf_expression)
+#         return cnf_expression #cnf-expression er en liste i liste  [[1,2,8],[-3,-4,-6]] der komma tilsvarer "and"
+
 
 # #for løkke der i er tidssteget
 # #dpll inni forløkken og sjekke for cnf setningen du har der og da.
@@ -106,5 +137,6 @@ def extendSatSet(horizon, old_sat_set):
 
 
 #ConvertToDIMACSsyntax()
-extendSatSet(2, createSATDict())
+#extendSatSet(2, createSATDict())
 #createSATDict()
+#actionSatToCnf()

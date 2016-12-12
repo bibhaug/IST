@@ -1,11 +1,14 @@
+import copy
+
 from hebrand_base import hebrandBase
 from hebrand_base import actionNames
+from read_pddl_domain_file import info_from_file
 
 def encodingHandler():
-        initial_sat_set = createSatDict()
+        initial_sat_set_atoms, initial_sat_set_numbers = createConversionDicts()
         #print('Initial sat_set is: ', initial_sat_set)
         all_actions, init_atoms, goal_state = info_from_file()
-        initial_state_CNF = createInitialStateCnfSentence(initial_sat_set, init_atoms)
+        initial_state_CNF = createInitialStateCnfSentence(initial_sat_set_atoms, init_atoms)
         print('Initial cnf is: ', initial_state_CNF)
         #print('Length of initial CNF is: ', len(initial_state_CNF))
 
@@ -19,11 +22,11 @@ def encodingHandler():
 
 #         return sat_sentence
 
+
 def createConversionDicts():
         #I had to use lists to change the names (since you can't iterate through a set)
         #In case we want the values in the dictionary to be integers instead of strings: dict_with_ints = dict((k,int(v)) for k,v in dict_with_strs.iteritems())
-        #Atoms_to_numbers_dict 
-
+        #Atoms_to_numbers_dict
         action_names = actionNames()
         for i in range(0, len(action_names)):
                 action_names[i] = action_names[i] + '0'
@@ -98,9 +101,7 @@ def extendConversionDicts(horizon, old_atoms_to_num_dict, old_num_to_atoms_dict)
                                 num_dict[str(val2)] = key2
         print('This is Atom Dict: ', atom_dict)
         print('This is Num Dict: ', num_dict)
-        return atom_dict
-
-
+        return atom_dict, num_dict
 
 def createInitialStateCnfSentence(sat_set_dict, init_states):
         init_cnf = []
@@ -165,7 +166,7 @@ def actionSatToCnf(sat_sentence):
         print('CNF-expression: ',cnf_expression)
 #         return cnf_expression #cnf-expression er en liste i liste  [[1,2,8],[-3,-4,-6]] der komma tilsvarer "or"
 
-# def frameAxiomSatToCnf(sat_sentence, current_sat_dict):
+# def frameAxiomSatToCnf(sat_sentence, current_atom_dict, current_num_dict):
 #         #sat_sentence = [['23'], ['30']] (der 23 er et atom fra hebrand base og 30 er en action)
 #         atom = sat_sentence[0]
 #         atom_negated = '-' + atom[0]
@@ -206,3 +207,4 @@ atom_to_num, num_to_atom = createConversionDicts()
 extendConversionDicts(2, atom_to_num, num_to_atom)
 #createConversionDicts()
 #actionSatToCnf()
+encodingHandler()

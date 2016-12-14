@@ -1,4 +1,4 @@
-from read_pddl_domain_file import info_from_file
+from read_pddl_domain_file import info_from_file, Action
 import itertools
 
 
@@ -28,7 +28,7 @@ def constantsInDomain():
                                 constants_in_domain.append(letter_after_comma)
         return constants_in_domain
 
-def all_combinations(how_many_characters):
+def allCombinations(how_many_characters):
         n = how_many_characters
         constants_in_domain = constantsInDomain() #list of all constants
         combination_list = []
@@ -49,10 +49,11 @@ def groundActions():
         #Skal navnet på Action's være med i grounded_actions-lista? (tror ikke det)
         all_actions, init_atoms, goal_atoms = info_from_file()
         grounded_actions = set()
-        name_of_preconds_and_effects = []
+        #name_of_preconds_and_effects = []
         num_of_actions = len(all_actions)
         
         for n in range (0, num_of_actions): #Go through each action
+                name_of_preconds_and_effects = []
                 preconds = all_actions[n].preconds
                 one_precondition = []
                 for i in range(0, len(preconds)): #go through each precondition
@@ -60,6 +61,8 @@ def groundActions():
                         name = [] # list for creating name for new precondtion
                         for j in range(0, one_precondition.index('(')):
                                 name += one_precondition[j]
+                        print('List of names: ', name_of_preconds_and_effects)
+                        print('Name: ', name)
                         if name not in name_of_preconds_and_effects: # Excluding already excisting names (hoping its not possible to get on(a,b) AND on(a,b,c))
                                 name_of_preconds_and_effects.append(name) #Add name to list (eks. on, clear,..)
                                 variable_list = []
@@ -67,7 +70,8 @@ def groundActions():
                                         if one_precondition[j].isalpha():
                                                 variable_list.append(one_precondition[j]) #Add all letters between the parantheses to a list
                                 howManyCharacters = len(variable_list) #how many letters do we have
-                                list_of_combinations = all_combinations(howManyCharacters) #get all the combinations of the constants in the domain
+                                list_of_combinations = allCombinations(howManyCharacters) #get all the combinations of the constants in the domain
+                                #print('LIST OF COMBINATIONS: ', list_of_combinations)
                                 howManyCombinations = len(list_of_combinations) #How many combinations do we get
                                 for j in range(0, howManyCombinations): #go through each combination
                                         for k in range(0, len(name_of_preconds_and_effects)): #go through all the different names we have
@@ -99,7 +103,7 @@ def groundActions():
                 						if one_effect[j].isalpha():
                 								variable_list.append(one_effect[j])
                 				howManyCharacters = len(variable_list)
-                				list_of_combinations = all_combinations(howManyCharacters)
+                				list_of_combinations = allCombinations(howManyCharacters)
                 				howManyCombinations = len(list_of_combinations)
                 				for j in range(0, howManyCombinations):
                 						for k in range(0, len(name_of_preconds_and_effects)):
@@ -122,8 +126,11 @@ def groundActions():
 def hebrandBase():
         grounded_atoms = groundAtoms_init_goal()
         grounded_actions = groundActions()
+        #SJEKKE FOR if not in, og startswith minus.
         hebrand_base = grounded_atoms | grounded_actions
         return hebrand_base
+
+
 
 def actionNames():
         all_actions, init_atoms, goal_atoms = info_from_file()
@@ -133,6 +140,70 @@ def actionNames():
                 names.append(all_actions[i].name)
         return names
 
-#hebrandBase()
+def allVariationsOfActionNames(all_actions): #with corresponding effects and preconds
+        names = actionNames()
+        list_of_combinations = []
+        list_of_actions = []
+        replace_letter = None
+        precond1 = None
+        effect1 = None
+        for i in range (0, len(names)):
+                how_many_characters = names[i].count(',') + 1
+                list_of_combinations = allCombinations(how_many_characters)
+                name = names[i] #each action name
+                all_preconds = all_actions[i].preconds
+                all_effects = all_actions[i].effects
+                variable_list = []
+                for j in range(name.index('(')+1, name.index(')')):
+                        if name[j].isalpha():
+                                variable_list.append(name[j]) #find variable that should be replaced
+                for j in range(0, len(list_of_combinations)): # ex [['A', 'A', 'A], ['A', 'A', 'B'],...,]
+                        new_effects = []
+                        new_preconds = []
+                        comb_list = list_of_combinations[j] #ex. ['A', 'A', 'A']
+                        new_name = name
+                        for k in range(0, len(comb_list)):
+                                replace_letter = comb_list[k] #ex. 'A'
+                                split_new_name = new_name.split('(') #so the variables that may also excist in the name doesn't get changed
+                                change_characters = split_new_name[1].replace(variable_list[k], replace_letter)
+                                new_name = split_new_name[0] + '(' + change_characters #Creates new Action Name
+                                for l in range(0, len(all_preconds)):
+                                        precond1 = all_preconds[l]
+                                        for m in range(0, len(comb_list)):
+                                                replace_letter = comb_list[m]
+                                                split_precond1 = precond1.split('(')
+                                                change_characters = split_precond1[1].replace(variable_list[m], replace_letter)
+                                                precond1 = split_precond1[0] + '(' + change_characters #Creates new Preconds
+                                        if precond1 not in new_preconds:
+                                                new_preconds.append(precond1)
+                                for l in range (0, len(all_effects)):
+                                        effect1 = all_effects[l]
+                                        for m in range(0, len(comb_list)):
+                                                replace_letter = comb_list[m]
+                                                split_effect1 = effect1.split('(')
+                                                change_characters = split_effect1[1].replace(variable_list[m], replace_letter)
+                                                effect1 = split_effect1[0] + '(' + change_characters #Creates new Effects
+                                        if effect1 not in new_effects:
+                                                new_effects.append(effect1)
+                        a = Action(new_name)
+                        a.effects = new_effects
+                        a.preconds = new_preconds
+                        list_of_actions.append(a)
+        print(list_of_actions)
+        return list_of_actions
+
+
+#all_actions, init_atoms, goal_atoms = info_from_file()
+#allVariationsOfActionNames(all_actions)
+print(hebrandBase())
+# hebrandbase=list(hebrandBase())
+# counter = 0
+# counter2 = 0
+# for i in range (0, len(hebrandbase)):
+#         counter2 +=1
+#         if hebrandbase[i].startswith('-'):
+#                 counter += 1
+# print(counter, counter2)
+
 
 	

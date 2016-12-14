@@ -2,18 +2,23 @@ import copy
 
 from hebrand_base import hebrandBase
 from hebrand_base import actionNames
+from hebrand_base import allVariationsOfActionNames
 from read_pddl_domain_file import info_from_file
 
 def encodingHandler():
-        initial_sat_set_atoms, initial_sat_set_numbers = createConversionDicts()
-        #print('Initial sat_set is: ', initial_sat_set)
-        all_actions, init_atoms, goal_state = info_from_file()
-        initial_state_CNF = createInitialStateCnfSentence(initial_sat_set_atoms, init_atoms)
-        print('Initial cnf is: ', initial_state_CNF)
-        print('Length of initial CNF is: ', len(initial_state_CNF))
+        atoms_to_numbers_dict, numbers_to_atoms_dict = createConversionDicts()
+        action_schemas, init_state, goal_state = info_from_file()
+        all_action_combinations = allVariationsOfActionNames(action_schemas)
 
+        initial_state_CNF = createInitialStateCnfSentence(initial_sat_set_atoms, init_state)
+        #print('Initial CNF is: ', initial_state_CNF)
+        #print('Length of initial CNF is: ', len(initial_state_CNF))
+
+        #functions under this line should eventually be part of while-loop in linear_encoder
         goal_state_CNF = createGoalStateCnfSentence(goal_state, 5)
-        print('Goal states: ', goal_state_CNF)
+        #print('Goal states: ', goal_state_CNF)
+
+        actions_CNF = extendActions(initial_sat_set_atoms, all_action_combinations, horizon)
 
 # def linear_encoder(horizon): #lager final sat_sentence for hver horizon, og returner til encoding_handler som kaller opp dpll() og slikt
 #         #rekkefølgen ting må gjøres i for å lage sat_sentence, bruker mange av hjelpefunksjonene under
@@ -168,10 +173,10 @@ def createGoalStateCnfSentence(goal_states, horizon):
                 current_goal_states.append(goal_states[state] + str(horizon))
         return current_goal_states #DETTE ER EN ENKELTLISTE; MÅ VÆRE LISTE-I-LISTE???
 
-# def extendActions(sat_set, horizon):
+def extendActions(sat_set_dict, horizon):
 
-#         actions_cnf = satToCnf(actions_sat_sentence)
-#         return actions_cnf
+        actions_cnf = satToCnf(actions_sat_sentence)
+        return actions_cnf
 
 # def extendFrameAxioms(sat_set, horizon):
 
@@ -244,14 +249,14 @@ def frameAxiomSatToCnf(sat_sentence, current_atom_dict, current_num_dict):
 
 
 # def ConvertToDIMACSsyntax():
-# 		#SAT_sentence = createSATsentence()
-# 		#list_SAT = SAT_sentence on list form [clause1, clause2, clause3] (der clause1 = a, b, c (der komma er OR))
-# 		number_of_clauses = 4 # telle hvor mange '^' det er og plusse på 1?
-# 		number_of_variables = 3 # 
-# 		f = open('cnf.txt', 'w')
-# 		f.write('p cnf' + ' '+ str(number_of_variables) + ' ' + str(number_of_clauses))
-# 		values = #splitLine? mellom hver '^' også splitte den igjen ved V ? 
-# 		f.write(value
+#               #SAT_sentence = createSATsentence()
+#               #list_SAT = SAT_sentence on list form [clause1, clause2, clause3] (der clause1 = a, b, c (der komma er OR))
+#               number_of_clauses = 4 # telle hvor mange '^' det er og plusse på 1?
+#               number_of_variables = 3 # 
+#               f = open('cnf.txt', 'w')
+#               f.write('p cnf' + ' '+ str(number_of_variables) + ' ' + str(number_of_clauses))
+#               values = #splitLine? mellom hver '^' også splitte den igjen ved V ? 
+#               f.write(value
 
 
 #ConvertToDIMACSsyntax()

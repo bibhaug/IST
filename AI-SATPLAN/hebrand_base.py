@@ -167,29 +167,48 @@ def allVariationsOfActionNames(all_actions): #with corresponding effects and pre
                                 split_new_name = new_name.split('(') #so the variables that may also excist in the name doesn't get changed
                                 change_characters = split_new_name[1].replace(variable_list[k], replace_letter)
                                 new_name = split_new_name[0] + '(' + change_characters #Creates new Action Name
-                                for l in range(0, len(all_preconds)):
-                                        precond1 = all_preconds[l]
-                                        for m in range(0, len(comb_list)):
-                                                replace_letter = comb_list[m]
-                                                split_precond1 = precond1.split('(')
-                                                change_characters = split_precond1[1].replace(variable_list[m], replace_letter)
-                                                precond1 = split_precond1[0] + '(' + change_characters #Creates new Preconds
-                                        if precond1 not in new_preconds:
-                                                new_preconds.append(precond1)
-                                for l in range (0, len(all_effects)):
-                                        effect1 = all_effects[l]
-                                        for m in range(0, len(comb_list)):
-                                                replace_letter = comb_list[m]
-                                                split_effect1 = effect1.split('(')
-                                                change_characters = split_effect1[1].replace(variable_list[m], replace_letter)
-                                                effect1 = split_effect1[0] + '(' + change_characters #Creates new Effects
-                                        if effect1 not in new_effects:
-                                                new_effects.append(effect1)
+                        for l in range(0, len(all_preconds)):
+                                precond1 = all_preconds[l]
+                                split_precond1 = precond1.split('(')#['on' 'b,Table)']
+                                split_split_precond1 = split_precond1[1].split(',') #['b', 'Table)', '']
+                                if split_split_precond1[-1] == '':
+                                        del split_split_precond1[-1]
+                                precond1 = split_precond1[0] + '(' #start of the name
+                                for n in range(0, len(split_split_precond1)):
+                                        if split_split_precond1[n][0].islower():
+                                                for m in range(0, len(comb_list)):
+                                                        replace_letter = comb_list[m]
+                                                        old_var = variable_list[m]
+                                                        split_split_precond1[n] = split_split_precond1[n].replace(old_var, replace_letter)
+                                        precond1 += split_split_precond1[n] + ',' #split_split_effect1[n] + ',' #Creates new Effects             
+                                if precond1 not in new_preconds:
+                                        length = len(precond1)
+                                        precond1 = precond1[:length-1] #remove last comma
+                                        new_preconds.append(precond1)
+                        for l in range(0, len(all_effects)):
+                                effect1 = all_effects[l]
+                                split_effect1 = effect1.split('(')#['on' 'b,Table)']
+                                split_split_effect1 = split_effect1[1].split(',') #['b', 'Table)', '']
+                                if split_split_effect1[-1] == '':
+                                        del split_split_effect1[-1]
+                                effect1 = split_effect1[0] + '(' #start of the name
+                                for n in range(0, len(split_split_effect1)):
+                                        if split_split_effect1[n][0].islower():
+                                                for m in range(0, len(comb_list)):
+                                                        replace_letter = comb_list[m]
+                                                        old_var = variable_list[m]
+                                                        split_split_effect1[n] = split_split_effect1[n].replace(old_var, replace_letter)
+                                        effect1 += split_split_effect1[n] + ',' #split_split_effect1[n] + ',' #Creates new Effects             
+                                if effect1 not in new_effects:
+                                        length = len(effect1)
+                                        effect1 = effect1[:length-1] #remove last comma
+                                        new_effects.append(effect1)
                         a = Action(new_name)
                         a.effects = new_effects
                         a.preconds = new_preconds
                         list_of_actions.append(a)
         print(list_of_actions)
+        print(len(list_of_actions))
         return list_of_actions
 
 

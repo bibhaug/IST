@@ -10,7 +10,10 @@ def encodingHandler():
         all_actions, init_atoms, goal_state = info_from_file()
         initial_state_CNF = createInitialStateCnfSentence(initial_sat_set_atoms, init_atoms)
         print('Initial cnf is: ', initial_state_CNF)
-        #print('Length of initial CNF is: ', len(initial_state_CNF))
+        print('Length of initial CNF is: ', len(initial_state_CNF))
+
+        goal_state_CNF = createGoalStateCnfSentence(goal_state, 5)
+        print('Goal states: ', goal_state_CNF)
 
 # def linear_encoder(horizon): #lager final sat_sentence for hver horizon, og returner til encoding_handler som kaller opp dpll() og slikt
 #         #rekkefølgen ting må gjøres i for å lage sat_sentence, bruker mange av hjelpefunksjonene under
@@ -122,39 +125,48 @@ def extendConversionDicts(horizon, old_atoms_to_num_dict, old_num_to_atoms_dict)
         print('This is Atom Dict: ', atom_dict)
         print('This is Num Dict: ', num_dict)
         return atom_dict, num_dict
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/origin/master
 
 def createInitialStateCnfSentence(sat_set_dict, init_states):
-        init_cnf = []
+        
+        action_names = actionNames()
+        for name in range(len(action_names)):
+                action_names[name] = '-' + action_names[name] + '0'
+        print('Updated action_names: ', action_names)
+        print('SAT_SET_DICT')
+
+        init_cnf = set()
         single_object_clause = ['init']
         copy_sat_set_dict = copy.deepcopy(sat_set_dict)
         copy_init_states = copy.deepcopy(init_states)
         #print('Copy of sat_set_dict: ', copy_sat_set_dict)
-        print('Init states: ', init_states)
+        #print('Init states: ', init_states)
         for atom in range(len(copy_init_states)):
                 copy_init_states[atom] = copy_init_states[atom] + '0'
+        for atom in range(len(copy_init_states)):
                 for key, val in copy_sat_set_dict.items():
-                        print('Copy_init_states[atom]: ', copy_init_states[atom])                               
-                        if key == copy_init_states[atom]:
-                                print('ATOM MATCH FOUND')
+                        #print('Copy_init_states[atom]: ', copy_init_states[atom])                               
+                        #if key == copy_init_states[atom]:
+                        if key in copy_init_states:
+                                #print('ATOM MATCH FOUND')
                                 single_object_clause = key
-                                print('Single_object_clause match is: ', single_object_clause)
-                                init_cnf.append(single_object_clause)
-                                print('Init_CNF after match append: ', init_cnf)
-                        else:
-                                #print('Atom match not found')
-                                single_object_clause = '-' + key
-                                #print('Single object clause is: ', single_object_clause)
-                                init_cnf.append(single_object_clause)
-        print('Init_CNF: ', init_cnf)
-        return init_cnf
+                                #print('Single_object_clause match is: ', single_object_clause)
+                                init_cnf.add(single_object_clause)
+                                #print('Init_CNF after match append: ', init_cnf)
+                        elif key[0] == '-':
+                                stripped_key = key.strip('-')
+                                #print('Stripped key is ', stripped_key)
+                                if key not in action_names:
+                                        if stripped_key not in copy_init_states:
+                                                print(stripped_key, ' is not in ', copy_init_states)
+                                                single_object_clause = key
+                                                init_cnf.add(single_object_clause)
+        return list(init_cnf) #DETTE ER ENKELTLISTE; MÅ VÆRE LISTE-I-LISTE???
 
-# def createGoalStateCnfSentence(goal_states, horizon):
-#         Vil ha det på liste-form
-#         return goal_states_list
+def createGoalStateCnfSentence(goal_states, horizon):
+        current_goal_states = []
+        for state in range(len(goal_states)):
+                current_goal_states.append(goal_states[state] + str(horizon))
+        return current_goal_states #DETTE ER EN ENKELTLISTE; MÅ VÆRE LISTE-I-LISTE???
 
 # def extendActions(sat_set, horizon):
 
@@ -206,7 +218,6 @@ def actionSatToCnf(sat_sentence):
 
 #         cnf_expression = []
 
-=======
 def frameAxiomSatToCnf(sat_sentence, current_atom_dict, current_num_dict):
         #sat_sentence = [['23'], ['30']] (der 23 er et atom fra hebrand base og 30 er en action)
         atom = sat_sentence[0]
@@ -221,7 +232,6 @@ def frameAxiomSatToCnf(sat_sentence, current_atom_dict, current_num_dict):
         cnf_expression = [atom_negated, action_negated, value_of_atom_updated_timestep] #Komma betyr "or" her
         print('CNF-expression: ', cnf_expression)
         return cnf_expression
->>>>>>> refs/remotes/origin/kari2
 
 
 # #for løkke der i er tidssteget

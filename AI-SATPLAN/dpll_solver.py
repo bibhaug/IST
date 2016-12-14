@@ -1,3 +1,4 @@
+import sys
 import time
 import copy
 
@@ -5,8 +6,41 @@ from dimacs_to_dpll import readDimacsFile
 
 NBVAR = 'undefined'
 
-def dpllHandler(): 
-	clauses, nbvar, nbclauses = readDimacsFile()
+
+def main():
+	if sys.argv[0] == 'dpll_solver.py':
+		file_name = sys.argv[1]
+		dpllHandler(file_name)
+
+def dpllHandlerWithoutReadingDimacs(clauses, nbvar, nbclauses): 
+	#for trying to see if we can solve the SAT-sentence we so far have created in encoding.py
+	#because we haven't had time to implement the SAT-to-Dimacs functionality
+
+	#clauses, nbvar, nbclauses = readDimacsFile(file_name)
+	print('\nReached dpllHandler')
+	global NBVAR
+	NBVAR = nbvar
+	print('NBVAR = ', NBVAR)
+	validated_literals = []
+	previous_literal = 'initialize'
+
+	for clause in range(len(clauses)): #imitating dimacs-syntax
+		clauses[clause].append('0')
+
+	print('Clauses sent from encoding.py: ', clauses)
+
+	satisfiability, polarity_of_literals = dpllAlgorithm(clauses, validated_literals, previous_literal)
+	print('Polarity of literals is: ', polarity_of_literals)
+	#duplicate_literal = polarity_of_literals.pop(0)	#the first polarity to be assigned gets assigned twice, so just removing a duplicate listing (treating symptom rather than cause :P)
+	print('\nSatisfiability: ', satisfiability)
+	#print('Polarity of literals: ', polarity_of_literals)
+	#print('# of literals with assigned values: ', len(polarity_of_literals))
+
+	return satisfiability, polarity_of_literals
+
+
+def dpllHandler(file_name): #this is the proper version, reading from a file using the dimacs syntax
+	clauses, nbvar, nbclauses = readDimacsFile(file_name)
 	print(clauses)
 	global NBVAR
 	NBVAR = nbvar
@@ -15,7 +49,6 @@ def dpllHandler():
 	previous_literal = 'initialize'
 
 	satisfiability, polarity_of_literals = dpllAlgorithm(clauses, validated_literals, previous_literal)
-	print('jrslufhrikh')
 	duplicate_literal = polarity_of_literals.pop(0)	#the first polarity to be assigned gets assigned twice, so just removing a duplicate listing (treating symptom rather than cause :P)
 	print('\nSatisfiability: ', satisfiability)
 	print('Polarity of literals: ', polarity_of_literals)
@@ -26,7 +59,7 @@ def dpllHandler():
 def dpllAlgorithm(clauses, validated_literals, previous_literal):
 	print('\n\nEntered new instance of dpllAlgorithm')
 	print('Current SAT-sentence is: ', clauses)
-	checkIfClausesAreValid(clauses)	#Can be removed? Needed when we had a problem with unvalid literals (literals out of range)
+	#checkIfClausesAreValid(clauses)	#Can be removed? Needed when we had a problem with unvalid literals (literals out of range)
 	if containsNoClauses(clauses):
 		validated_literals.append(previous_literal)
 		return True, validated_literals
@@ -36,7 +69,7 @@ def dpllAlgorithm(clauses, validated_literals, previous_literal):
 		print('Returning False because of empty clause')
 		return False, validated_literals
 
-	#contains_pure_literal, pure_literal = containsPureLiteral(clauses)
+	#contains_pure_literal, pure_literal = containsPureLiteral(clauses) #there's a bug in the containsPureLiteral-function
 	#if contains_pure_literal:
 	#	literal = pure_literal
 	#	print('Pure_literal to simplify is: ', literal)
@@ -101,7 +134,7 @@ def containsEmptyClause(clauses):
 
 CHECKED_LITERALS = []
 
-def containsPureLiteral(clauses):	#literal that only occurs with one polarity
+def containsPureLiteral(clauses):	#literal that only occurs with one polarity #CURRENTLY CONTAINS A BUG...
 	#need to check all literals (naturally stop checking if we find a pure literal)
 	#need to keep track of which literals we already checked. 
 	if len(CHECKED_LITERALS) == int(NBVAR):	#If all literals have been checked, there's no point in continue checking
@@ -134,7 +167,7 @@ def literalExistsInClauses(clauses, literal):
 	return False
 
 def literalNotCheckedBefore(literal):
-	if literal in CHECKED_LITERALS: #Er dette en gyldig command???
+	if literal in CHECKED_LITERALS:
 		return False
 	else:
 		return True
@@ -147,7 +180,7 @@ def containsUnitClause(clauses):
 	return False, 'foobar'
 
 def selectRandomLiteral(clauses):
-	return clauses[0][0]	#the randomness of this function can be heavily critized
+	return clauses[0][0]	#the randomness of this function can be heavily critized ---------------------------------------------------
 
 def simplify(clauses, literal):
 	clauses1 = removeClausesContainingLiteral(clauses, literal)
@@ -157,9 +190,7 @@ def simplify(clauses, literal):
 def removeClausesContainingLiteral(clauses, literal):
 	indexes_to_remove = []
 	for clause in range(len(clauses)):
-		#print('Going through for-loop for the ', clause, ' time.')
 		if clauseContainsLiteral(clauses[clause], literal):
-			#print('Clause #', clause, ' contains literal ', literal)
 			indexes_to_remove.append(clause)
 	print('Indexes to remove: ', indexes_to_remove)
 
@@ -195,4 +226,5 @@ def clauseContainsLiteral(clause, literal):
 			return True
 	return False
 
-dpllHandler()
+#dpllHandler()
+main()

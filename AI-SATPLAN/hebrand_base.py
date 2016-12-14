@@ -1,9 +1,14 @@
 from read_pddl_domain_file import info_from_file, Action
 import itertools
 
+FILE_NAME = 'undefined'
+
+def setFileName(file_name):
+        global FILE_NAME
+        FILE_NAME = file_name
 
 def constantsInDomain():
-        all_actions, init_atoms, goal_atoms = info_from_file()
+        all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
         constants_in_domain = []
         length_init = len(init_atoms)
         for i in range(0, length_init):
@@ -28,16 +33,16 @@ def constantsInDomain():
                                 constants_in_domain.append(letter_after_comma)
         return constants_in_domain
 
-def allCombinations(how_many_characters):
+def allCombinations(how_many_characters): #all combination for a given set of characters
         n = how_many_characters
         constants_in_domain = constantsInDomain() #list of all constants
         combination_list = []
         for i in itertools.product(constants_in_domain, repeat = n):
                 combination_list.append(list(i))
-        return combination_list # [['A', 'A', 'A'], ...]
+        return combination_list # [['A', 'A', 'A'], ['A', 'A', 'B'], ...]
 
-def groundAtoms_init_goal():
-        all_actions, init_atoms, goal_atoms = info_from_file()
+def groundAtoms_init_goal(): #finding the ground atoms defined in the init and goal lines
+        all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
         num_of_actions = len(all_actions)
         list_of_atoms = []
         for i in range (0, num_of_actions):
@@ -46,10 +51,8 @@ def groundAtoms_init_goal():
         return grounded_atoms
 
 def groundActions():
-        #Skal navnet på Action's være med i grounded_actions-lista? (tror ikke det)
-        all_actions, init_atoms, goal_atoms = info_from_file()
+        all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
         grounded_actions = set()
-        #name_of_preconds_and_effects = []
         num_of_actions = len(all_actions)
         
         for n in range (0, num_of_actions): #Go through each action
@@ -61,8 +64,8 @@ def groundActions():
                         name = [] # list for creating name for new precondtion
                         for j in range(0, one_precondition.index('(')):
                                 name += one_precondition[j]
-                        print('List of names: ', name_of_preconds_and_effects)
-                        print('Name: ', name)
+                        #print('List of names: ', name_of_preconds_and_effects)
+                        #print('Name: ', name)
                         if name not in name_of_preconds_and_effects: # Excluding already excisting names (hoping its not possible to get on(a,b) AND on(a,b,c))
                                 name_of_preconds_and_effects.append(name) #Add name to list (eks. on, clear,..)
                                 variable_list = []
@@ -91,7 +94,7 @@ def groundActions():
                         one_precondition = []
                 effects = all_actions[n].effects
                 one_effect = []
-                for i in range(0, len(effects)):
+                for i in range(0, len(effects)): #same as above, just for effects in stead of preconds
                 		one_effect += effects[i]
                 		name = []
                 		for j in range(0, one_effect.index('(')):
@@ -126,17 +129,15 @@ def groundActions():
 def hebrandBase():
         grounded_atoms = groundAtoms_init_goal()
         grounded_actions = groundActions()
-        #SJEKKE FOR if not in, og startswith minus.
         hebrand_base = grounded_atoms | grounded_actions
         return hebrand_base
 
 
 
 def actionNames():
-        all_actions, init_atoms, goal_atoms = info_from_file()
+        all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
         names = []
         for i in range(0, len(all_actions)):
-                
                 names.append(all_actions[i].name)
         return names
 
@@ -167,43 +168,50 @@ def allVariationsOfActionNames(all_actions): #with corresponding effects and pre
                                 split_new_name = new_name.split('(') #so the variables that may also excist in the name doesn't get changed
                                 change_characters = split_new_name[1].replace(variable_list[k], replace_letter)
                                 new_name = split_new_name[0] + '(' + change_characters #Creates new Action Name
-                                for l in range(0, len(all_preconds)):
-                                        precond1 = all_preconds[l]
-                                        for m in range(0, len(comb_list)):
-                                                replace_letter = comb_list[m]
-                                                split_precond1 = precond1.split('(')
-                                                change_characters = split_precond1[1].replace(variable_list[m], replace_letter)
-                                                precond1 = split_precond1[0] + '(' + change_characters #Creates new Preconds
-                                        if precond1 not in new_preconds:
-                                                new_preconds.append(precond1)
-                                for l in range (0, len(all_effects)):
-                                        effect1 = all_effects[l]
-                                        for m in range(0, len(comb_list)):
-                                                replace_letter = comb_list[m]
-                                                split_effect1 = effect1.split('(')
-                                                change_characters = split_effect1[1].replace(variable_list[m], replace_letter)
-                                                effect1 = split_effect1[0] + '(' + change_characters #Creates new Effects
-                                        if effect1 not in new_effects:
-                                                new_effects.append(effect1)
+                        for l in range(0, len(all_preconds)):
+                                precond1 = all_preconds[l]
+                                split_precond1 = precond1.split('(')#['on' 'b,Table)']
+                                split_split_precond1 = split_precond1[1].split(',') #['b', 'Table)', '']
+                                if split_split_precond1[-1] == '':
+                                        del split_split_precond1[-1]
+                                precond1 = split_precond1[0] + '(' #start of the name
+                                for n in range(0, len(split_split_precond1)):
+                                        if split_split_precond1[n][0].islower():
+                                                for m in range(0, len(comb_list)):
+                                                        replace_letter = comb_list[m]
+                                                        old_var = variable_list[m]
+                                                        split_split_precond1[n] = split_split_precond1[n].replace(old_var, replace_letter)
+                                        precond1 += split_split_precond1[n] + ',' #split_split_effect1[n] + ',' #Creates new Effects             
+                                if precond1 not in new_preconds:
+                                        length = len(precond1)
+                                        precond1 = precond1[:length-1] #remove last comma
+                                        new_preconds.append(precond1)
+                        for l in range(0, len(all_effects)):
+                                effect1 = all_effects[l]
+                                split_effect1 = effect1.split('(')#['on' 'b,Table)']
+                                split_split_effect1 = split_effect1[1].split(',') #['b', 'Table)', '']
+                                if split_split_effect1[-1] == '':
+                                        del split_split_effect1[-1]
+                                effect1 = split_effect1[0] + '(' #start of the name
+                                for n in range(0, len(split_split_effect1)):
+                                        if split_split_effect1[n][0].islower():
+                                                for m in range(0, len(comb_list)):
+                                                        replace_letter = comb_list[m]
+                                                        old_var = variable_list[m]
+                                                        split_split_effect1[n] = split_split_effect1[n].replace(old_var, replace_letter)
+                                        effect1 += split_split_effect1[n] + ',' #split_split_effect1[n] + ',' #Creates new Effects             
+                                if effect1 not in new_effects:
+                                        length = len(effect1)
+                                        effect1 = effect1[:length-1] #remove last comma
+                                        new_effects.append(effect1)
                         a = Action(new_name)
                         a.effects = new_effects
                         a.preconds = new_preconds
                         list_of_actions.append(a)
-        print(list_of_actions)
+
+        #print(list_of_actions)
+        #print(len(list_of_actions))
         return list_of_actions
 
-
-all_actions, init_atoms, goal_atoms = info_from_file()
-allVariationsOfActionNames(all_actions)
-#print(hebrandBase())
-# hebrandbase=list(hebrandBase())
-# counter = 0
-# counter2 = 0
-# for i in range (0, len(hebrandbase)):
-#         counter2 +=1
-#         if hebrandbase[i].startswith('-'):
-#                 counter += 1
-# print(counter, counter2)
-
-
-	
+#all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
+#allVariationsOfActionNames(all_actions)

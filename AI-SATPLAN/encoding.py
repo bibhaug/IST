@@ -265,6 +265,6 @@ def frameAxiomSatToCnf(sat_sentence, current_atom_dict, current_num_dict):
 
 
 
-createConversionDicts()
+#createConversionDicts()
 #actionSatToCnf()
-#encodingHandler()
+encodingHandler()

@@ -2,18 +2,23 @@ import copy
 
 from hebrand_base import hebrandBase
 from hebrand_base import actionNames
+from hebrand_base import allVariationsOfActionNames
 from read_pddl_domain_file import info_from_file
 
 def encodingHandler():
-        initial_sat_set_atoms, initial_sat_set_numbers = createConversionDicts()
-        #print('Initial sat_set is: ', initial_sat_set)
-        all_actions, init_atoms, goal_state = info_from_file()
-        initial_state_CNF = createInitialStateCnfSentence(initial_sat_set_atoms, init_atoms)
-        print('Initial cnf is: ', initial_state_CNF)
-        print('Length of initial CNF is: ', len(initial_state_CNF))
+        atoms_to_numbers_dict, numbers_to_atoms_dict = createConversionDicts()
+        action_schemas, init_state, goal_state = info_from_file()
+        all_action_combinations = allVariationsOfActionNames(action_schemas)
 
+        initial_state_CNF = createInitialStateCnfSentence(initial_sat_set_atoms, init_state)
+        #print('Initial CNF is: ', initial_state_CNF)
+        #print('Length of initial CNF is: ', len(initial_state_CNF))
+
+        #functions under this line should eventually be part of while-loop in linear_encoder
         goal_state_CNF = createGoalStateCnfSentence(goal_state, 5)
-        print('Goal states: ', goal_state_CNF)
+        #print('Goal states: ', goal_state_CNF)
+
+        actions_CNF = extendActions(initial_sat_set_atoms, all_action_combinations, horizon)
 
 # def linear_encoder(horizon): #lager final sat_sentence for hver horizon, og returner til encoding_handler som kaller opp dpll() og slikt
 #         #rekkefølgen ting må gjøres i for å lage sat_sentence, bruker mange av hjelpefunksjonene under
@@ -34,8 +39,6 @@ def createConversionDicts():
         for i in range(0, len(action_names)):
                 action_names[i] = action_names[i] + '0'
         hebrand_base_set = hebrandBase()
-        print('Hebrand base is: ', hebrand_base_set)
-        print('Length of Hebrand base: ', len(hebrand_base_set))
         hebrand_base_list = list(hebrand_base_set)
         for i in range (0, len(hebrand_base_list)):
                 hebrand_base_list[i] = hebrand_base_list[i] + '0'
@@ -43,31 +46,51 @@ def createConversionDicts():
         for i in range (0, len(action_names)):
                 hebrand_base_dict[action_names[i]] = 0
         value = 1
+        #print('THIS IS Hebrand_Base_Dict: ', hebrand_base_dict)
+        print('This is the length of hebrand_base_dict:', len(hebrand_base_dict))
         atoms_to_numbers_dict = {}
         numbers_to_atoms_dict = {}
+        counter1 = 0
+        counter2 = 0
+        counter3 = 0
+        counter4 = 0
         for key, val in hebrand_base_dict.items():
                 val1 = str(value)
                 val2 = '-' + str(value)
                 if key.startswith('-'):
                         key1 = key
                         key2 = key[1:]
-                        if key1 not in atoms_to_numbers_dict or key2 not in atoms_to_numbers_dict:
+                        counter1 += 1
+                        print('KEY1 NEGATIV: ', key1)
+                        print('KEY2 NEGATIV: ', key2)
+                        print('COUNTS NEGATIV: ', counter1)
+                        #print('ATOMS_TO_NUMBERS_DICT i NEGATIV: ', atoms_to_numbers_dict)
+                        if ((key1 not in atoms_to_numbers_dict) or (key2 not in atoms_to_numbers_dict)):
+                                counter3 += 1
+                                print('COUNTER INSIDE NEGATIV: ', counter3)
                                 atoms_to_numbers_dict[key2] = val1
                                 atoms_to_numbers_dict[key1] = val2
                                 numbers_to_atoms_dict[val1] = key2
                                 numbers_to_atoms_dict[val2] = key1
                                 value += 1 
+                        #print('ATOMS_TO_NUMBERS_DICT i NEGATIV END: ', atoms_to_numbers_dict)
                 else:
                         key1 = key
                         key2 = '-' + key
-                        if key1 not in atoms_to_numbers_dict or key2 not in atoms_to_numbers_dict:
+                        counter2 += 1
+                        print('KEY1 POSITIV: ', key1)
+                        print('KEY2 POSITIV: ', key2)
+                        print('COUNTS POSITIV: ', counter2)
+                        if ((key1 not in atoms_to_numbers_dict) or (key2 not in atoms_to_numbers_dict)):
+                                counter4 += 1
+                                print('COUNTER INSIDE POSITIV: ',counter4)
                                 atoms_to_numbers_dict[key1] = val1
                                 atoms_to_numbers_dict[key2] = val2
                                 numbers_to_atoms_dict[val1] = key1
                                 numbers_to_atoms_dict[val2] = key2
-
                                 value += 1 
-        #print('SAT_DICTIONARY: ', atoms_to_numbers_dict)
+        print('SAT_DICTIONARY: ', atoms_to_numbers_dict)
+        print('LENGTH OF ATOMS_TO_NUMBERS_DICT: ', len(atoms_to_numbers_dict))
         #print('NUM_DiCTIONARY: ', numbers_to_atoms_dict)
 
 
@@ -104,8 +127,8 @@ def extendConversionDicts(horizon, old_atoms_to_num_dict, old_num_to_atoms_dict)
                                 atom_dict[key2] = str(val2)
                                 num_dict[str(val1)] = key1
                                 num_dict[str(val2)] = key2
-        #print('This is Atom Dict: ', atom_dict)
-        #print('This is Num Dict: ', num_dict)
+        print('This is Atom Dict: ', atom_dict)
+        print('This is Num Dict: ', num_dict)
         return atom_dict, num_dict
 
 def createInitialStateCnfSentence(sat_set_dict, init_states):
@@ -150,10 +173,10 @@ def createGoalStateCnfSentence(goal_states, horizon):
                 current_goal_states.append(goal_states[state] + str(horizon))
         return current_goal_states #DETTE ER EN ENKELTLISTE; MÅ VÆRE LISTE-I-LISTE???
 
-# def extendActions(sat_set, horizon):
+def extendActions(sat_set_dict, horizon):
 
-#         actions_cnf = satToCnf(actions_sat_sentence)
-#         return actions_cnf
+        actions_cnf = satToCnf(actions_sat_sentence)
+        return actions_cnf
 
 # def extendFrameAxioms(sat_set, horizon):
 
@@ -182,6 +205,7 @@ def actionSatToCnf(sat_sentence):
                 disjunction = [negated_action, effects[i]]
                 cnf_expression.append(disjunction)
         print('CNF-expression: ',cnf_expression)
+        return cnf_expression
 #         return cnf_expression #cnf-expression er en liste i liste  [[1,2,8],[-3,-4,-6]] der komma tilsvarer "or"
 
 # def frameAxiomSatToCnf(sat_sentence, current_atom_dict, current_num_dict):
@@ -191,12 +215,27 @@ def actionSatToCnf(sat_sentence):
 #         action = sat_sentence[1]
 #         action_negated = '-' + action[0]
 #         atom_value_increased_time_step = atom[0]
-#         for key, val in current_sat_dict:
+#         for key, val in current_num_dict:
+
 
 
 
 #         cnf_expression = []
 
+def frameAxiomSatToCnf(sat_sentence, current_atom_dict, current_num_dict):
+        #sat_sentence = [['23'], ['30']] (der 23 er et atom fra hebrand base og 30 er en action)
+        atom = sat_sentence[0]
+        atom_negated = '-' + atom[0]
+        action = sat_sentence[1]
+        action_negated = '-' + action[0]
+        name_of_atom = current_num_dict[atom[0]]
+        new_end_of_name = str(int(name_of_atom[-1]) + 1) 
+        name_of_atom_updated_timestep = name_of_atom[:-1] + new_end_of_name
+        #!! ERROR: kan vi anta at atomet med oppdatert timestep ligger i current atom dict?? 
+        value_of_atom_updated_timestep = current_atom_dict[name_of_atom_updated_timestep]
+        cnf_expression = [atom_negated, action_negated, value_of_atom_updated_timestep] #Komma betyr "or" her
+        print('CNF-expression: ', cnf_expression)
+        return cnf_expression
 
 
 # #for løkke der i er tidssteget
@@ -210,19 +249,27 @@ def actionSatToCnf(sat_sentence):
 
 
 # def ConvertToDIMACSsyntax():
-# 		#SAT_sentence = createSATsentence()
-# 		#list_SAT = SAT_sentence on list form [clause1, clause2, clause3] (der clause1 = a, b, c (der komma er OR))
-# 		number_of_clauses = 4 # telle hvor mange '^' det er og plusse på 1?
-# 		number_of_variables = 3 # 
-# 		f = open('cnf.txt', 'w')
-# 		f.write('p cnf' + ' '+ str(number_of_variables) + ' ' + str(number_of_clauses))
-# 		values = #splitLine? mellom hver '^' også splitte den igjen ved V ? 
-# 		f.write(value
+#               #SAT_sentence = createSATsentence()
+#               #list_SAT = SAT_sentence on list form [clause1, clause2, clause3] (der clause1 = a, b, c (der komma er OR))
+#               number_of_clauses = 4 # telle hvor mange '^' det er og plusse på 1?
+#               number_of_variables = 3 # 
+#               f = open('cnf.txt', 'w')
+#               f.write('p cnf' + ' '+ str(number_of_variables) + ' ' + str(number_of_clauses))
+#               values = #splitLine? mellom hver '^' også splitte den igjen ved V ? 
+#               f.write(value
 
 
 #ConvertToDIMACSsyntax()
-#atom_to_num, num_to_atom = createConversionDicts()
+
+# sat_sentence = [['23'], ['30']]
+# atom_to_num, num_to_atom = createConversionDicts()
+# dict_atom, dict_num = extendConversionDicts(1, atom_to_num, num_to_atom)
+# frameAxiomSatToCnf(sat_sentence, dict_atom, dict_num)
+
 #extendConversionDicts(2, atom_to_num, num_to_atom)
+
+
+
 #createConversionDicts()
 #actionSatToCnf()
 encodingHandler()

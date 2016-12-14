@@ -102,6 +102,10 @@ def extendConversionDicts(horizon, old_atoms_to_num_dict, old_num_to_atoms_dict)
         print('This is Atom Dict: ', atom_dict)
         print('This is Num Dict: ', num_dict)
         return atom_dict, num_dict
+<<<<<<< HEAD
+
+=======
+>>>>>>> refs/remotes/origin/master
 
 def createInitialStateCnfSentence(sat_set_dict, init_states):
         init_cnf = []
@@ -173,7 +177,8 @@ def actionSatToCnf(sat_sentence):
 #         action = sat_sentence[1]
 #         action_negated = '-' + action[0]
 #         atom_value_increased_time_step = atom[0]
-#         for key, val in current_sat_dict:
+#         for key, val in current_num_dict:
+
 
 
 

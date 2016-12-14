@@ -12,7 +12,7 @@ def encodingHandler():
         print('Initial cnf is: ', initial_state_CNF)
         print('Length of initial CNF is: ', len(initial_state_CNF))
 
-        goal_state_CNF = createGoalStateCnfSentence(goal_state, '0')
+        goal_state_CNF = createGoalStateCnfSentence(goal_state, 5)
         print('Goal states: ', goal_state_CNF)
 
 # def linear_encoder(horizon): #lager final sat_sentence for hver horizon, og returner til encoding_handler som kaller opp dpll() og slikt
@@ -124,28 +124,31 @@ def createInitialStateCnfSentence(sat_set_dict, init_states):
         #print('Init states: ', init_states)
         for atom in range(len(copy_init_states)):
                 copy_init_states[atom] = copy_init_states[atom] + '0'
+        for atom in range(len(copy_init_states)):
                 for key, val in copy_sat_set_dict.items():
                         #print('Copy_init_states[atom]: ', copy_init_states[atom])                               
-                        if key == copy_init_states[atom]:
+                        #if key == copy_init_states[atom]:
+                        if key in copy_init_states:
                                 #print('ATOM MATCH FOUND')
                                 single_object_clause = key
                                 #print('Single_object_clause match is: ', single_object_clause)
                                 init_cnf.add(single_object_clause)
                                 #print('Init_CNF after match append: ', init_cnf)
                         elif key[0] == '-':
-                                if key not in action_names: 
-                                        single_object_clause = key
-                                        init_cnf.add(single_object_clause)
-        #print('Init_CNF: ', init_cnf)
+                                stripped_key = key.strip('-')
+                                #print('Stripped key is ', stripped_key)
+                                if key not in action_names:
+                                        if stripped_key not in copy_init_states:
+                                                print(stripped_key, ' is not in ', copy_init_states)
+                                                single_object_clause = key
+                                                init_cnf.add(single_object_clause)
         return list(init_cnf) #DETTE ER ENKELTLISTE; MÅ VÆRE LISTE-I-LISTE???
 
 def createGoalStateCnfSentence(goal_states, horizon):
-        #Vil ha det på liste-form
-        #goal_states_list = []
         current_goal_states = []
         for state in range(len(goal_states)):
-                current_goal_states.append(goal_states[state] + horizon)
-        return current_goal_states
+                current_goal_states.append(goal_states[state] + str(horizon))
+        return current_goal_states #DETTE ER EN ENKELTLISTE; MÅ VÆRE LISTE-I-LISTE???
 
 # def extendActions(sat_set, horizon):
 

@@ -203,7 +203,6 @@ def actionSatToCnf(sat_sentence):
         return cnf_expression
 #         return cnf_expression #cnf-expression er en liste i liste  [[1,2,8],[-3,-4,-6]] der komma tilsvarer "or"
 
-<<<<<<< HEAD
 # def frameAxiomSatToCnf(sat_sentence, current_atom_dict, current_num_dict):
 #         #sat_sentence = [['23'], ['30']] (der 23 er et atom fra hebrand base og 30 er en action)
 #         atom = sat_sentence[0]

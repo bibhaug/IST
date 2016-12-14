@@ -61,8 +61,8 @@ def groundActions():
                         name = [] # list for creating name for new precondtion
                         for j in range(0, one_precondition.index('(')):
                                 name += one_precondition[j]
-                        print('List of names: ', name_of_preconds_and_effects)
-                        print('Name: ', name)
+                        #print('List of names: ', name_of_preconds_and_effects)
+                        #print('Name: ', name)
                         if name not in name_of_preconds_and_effects: # Excluding already excisting names (hoping its not possible to get on(a,b) AND on(a,b,c))
                                 name_of_preconds_and_effects.append(name) #Add name to list (eks. on, clear,..)
                                 variable_list = []
@@ -189,7 +189,8 @@ def allVariationsOfActionNames(all_actions): #with corresponding effects and pre
                         a.effects = new_effects
                         a.preconds = new_preconds
                         list_of_actions.append(a)
-        print(list_of_actions)
+        #print(list_of_actions)
+        #print(len(list_of_actions))
         return list_of_actions
 
 

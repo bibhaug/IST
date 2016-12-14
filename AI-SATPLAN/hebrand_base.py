@@ -1,9 +1,14 @@
 from read_pddl_domain_file import info_from_file, Action
 import itertools
 
+FILE_NAME = 'undefined'
+
+def setFileName(file_name):
+        global FILE_NAME
+        FILE_NAME = file_name
 
 def constantsInDomain():
-        all_actions, init_atoms, goal_atoms = info_from_file()
+        all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
         constants_in_domain = []
         length_init = len(init_atoms)
         for i in range(0, length_init):
@@ -28,16 +33,16 @@ def constantsInDomain():
                                 constants_in_domain.append(letter_after_comma)
         return constants_in_domain
 
-def allCombinations(how_many_characters):
+def allCombinations(how_many_characters): #all combination for a given set of characters
         n = how_many_characters
         constants_in_domain = constantsInDomain() #list of all constants
         combination_list = []
         for i in itertools.product(constants_in_domain, repeat = n):
                 combination_list.append(list(i))
-        return combination_list # [['A', 'A', 'A'], ...]
+        return combination_list # [['A', 'A', 'A'], ['A', 'A', 'B'], ...]
 
-def groundAtoms_init_goal():
-        all_actions, init_atoms, goal_atoms = info_from_file()
+def groundAtoms_init_goal(): #finding the ground atoms defined in the init and goal lines
+        all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
         num_of_actions = len(all_actions)
         list_of_atoms = []
         for i in range (0, num_of_actions):
@@ -46,10 +51,8 @@ def groundAtoms_init_goal():
         return grounded_atoms
 
 def groundActions():
-        #Skal navnet på Action's være med i grounded_actions-lista? (tror ikke det)
-        all_actions, init_atoms, goal_atoms = info_from_file()
+        all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
         grounded_actions = set()
-        #name_of_preconds_and_effects = []
         num_of_actions = len(all_actions)
         
         for n in range (0, num_of_actions): #Go through each action
@@ -91,7 +94,7 @@ def groundActions():
                         one_precondition = []
                 effects = all_actions[n].effects
                 one_effect = []
-                for i in range(0, len(effects)):
+                for i in range(0, len(effects)): #same as above, just for effects in stead of preconds
                 		one_effect += effects[i]
                 		name = []
                 		for j in range(0, one_effect.index('(')):
@@ -126,17 +129,15 @@ def groundActions():
 def hebrandBase():
         grounded_atoms = groundAtoms_init_goal()
         grounded_actions = groundActions()
-        #SJEKKE FOR if not in, og startswith minus.
         hebrand_base = grounded_atoms | grounded_actions
         return hebrand_base
 
 
 
 def actionNames():
-        all_actions, init_atoms, goal_atoms = info_from_file()
+        all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
         names = []
         for i in range(0, len(all_actions)):
-                
                 names.append(all_actions[i].name)
         return names
 
@@ -207,27 +208,10 @@ def allVariationsOfActionNames(all_actions): #with corresponding effects and pre
                         a.effects = new_effects
                         a.preconds = new_preconds
                         list_of_actions.append(a)
-<<<<<<< HEAD
+
         #print(list_of_actions)
         #print(len(list_of_actions))
-=======
-        print(list_of_actions)
-        print(len(list_of_actions))
->>>>>>> refs/remotes/origin/kari2
         return list_of_actions
 
-
-all_actions, init_atoms, goal_atoms = info_from_file()
-allVariationsOfActionNames(all_actions)
-#print(hebrandBase())
-# hebrandbase=list(hebrandBase())
-# counter = 0
-# counter2 = 0
-# for i in range (0, len(hebrandbase)):
-#         counter2 +=1
-#         if hebrandbase[i].startswith('-'):
-#                 counter += 1
-# print(counter, counter2)
-
-
-	
+#all_actions, init_atoms, goal_atoms = info_from_file(FILE_NAME)
+#allVariationsOfActionNames(all_actions)

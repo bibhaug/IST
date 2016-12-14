@@ -1,14 +1,8 @@
 import time
 #Reads DIMACS-file and put the data into a list of lists
 
-def readDimacsFile():
-	#f = open('dimacs_files/DIMACS_test2.dat', 'r')
-	#f = open('dimacs_files/aim-50-1_6-yes1-4.dat', 'r')
-	f = open('dimacs_files/05-queens.dat', 'r')
-	#f = open('dimacs_files/10-queens.dat', 'r')
-	#f = open('dimacs_files/20-queens.dat', 'r')
-	#f = open('dimacs_files/14-queens.dat', 'r')
-	#f = open('dimacs_files/16-queens.dat', 'r')
+def readDimacsFile(file_name): #file_name must be on the form dimacs_files/*filename*.dat
+	f = open(file_name, 'r')
 	line = f.readline()
 	current_clause = []
 	clauses = []

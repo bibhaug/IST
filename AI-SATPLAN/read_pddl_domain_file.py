@@ -13,8 +13,9 @@ class Action:
         def __repr__(self):
                 return "%s; %s, %s" % (self.name, self.preconds, self.effects)
 		 
-def info_from_file():
-	f = open('blocks2.dat', 'r')
+def info_from_file(file_name):
+	#print('The file name is: ', file_name)
+	f = open(file_name, 'r')
 	line = f.readline()
 	init_atoms = []
 	goal_atoms = []
@@ -39,5 +40,3 @@ def info_from_file():
 					goal_atoms.append(splitLine[i])
 		line = f.readline()
 	return all_actions, init_atoms, goal_atoms
-
-info_from_file()

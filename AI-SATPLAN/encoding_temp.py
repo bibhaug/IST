@@ -1,16 +1,21 @@
-import system
 import copy
 
 from hebrand_base import hebrandBase
 from hebrand_base import actionNames
 from hebrand_base import allVariationsOfActionNames
+from hebrand_base import setFileName
 from read_pddl_domain_file import info_from_file
-from dpll_solver import 
+
+FILE_NAME = 'undefined'
 
 def encodingHandler(file_name):
-        atoms_to_numbers_dict, numbers_to_atoms_dict = createConversionDicts(file_name)
-        hebrand_base = hebrandBase(file_name)
-        action_schemas, init_state, goal_state = info_from_file(file_name)
+        global FILE_NAME
+        FILE_NAME = file_name
+        setFileName(FILE_NAME) #defines file_name in hebrand base
+
+        atoms_to_numbers_dict, numbers_to_atoms_dict = createConversionDicts()
+        hebrand_base = hebrandBase()
+        action_schemas, init_state, goal_state = info_from_file(FILE_NAME)
         all_action_combinations = allVariationsOfActionNames(action_schemas)
         print('All action combinations: ', all_action_combinations)
 
@@ -62,18 +67,14 @@ def encodingHandler(file_name):
 #         return sat_sentence
 
 
-def createConversionDicts(file_name):
-        #I had to use lists to change the names (since you can't iterate through a set)
-        #In case we want the values in the dictionary to be integers instead of strings: dict_with_ints = dict((k,int(v)) for k,v in dict_with_strs.iteritems())
-        #Atoms_to_numbers_dict
-        action_schemas, init_state, goal_state = info_from_file(file_name)
+def createConversionDicts():
+        action_schemas, init_state, goal_state = info_from_file(FILE_NAME)
         actions = allVariationsOfActionNames(action_schemas)
+        print('List of action schemas is: ', actions)
         action_names = []
         for action in range(len(actions)):
                 action_names.append(actions[action].name + '0')
-        #action_names = actionNames()
-        #for i in range(0, len(action_names)):
-        #        action_names[i] = action_names[i] + '0'
+
         hebrand_base_set = hebrandBase()
         hebrand_base_list = list(hebrand_base_set)
         for i in range (0, len(hebrand_base_list)):
@@ -82,44 +83,26 @@ def createConversionDicts(file_name):
         for i in range (0, len(action_names)):
                 hebrand_base_dict[action_names[i]] = 0
         value = 1
-        #print('THIS IS Hebrand_Base_Dict: ', hebrand_base_dict)
+        #print('This is Hebrand_Base_Dict: ', hebrand_base_dict)
         #print('This is the length of hebrand_base_dict:', len(hebrand_base_dict))
         atoms_to_numbers_dict = {}
         numbers_to_atoms_dict = {}
-        counter1 = 0
-        counter2 = 0
-        counter3 = 0
-        counter4 = 0
         for key, val in hebrand_base_dict.items():
                 val1 = str(value)
                 val2 = '-' + str(value)
                 if key.startswith('-'):
                         key1 = key
                         key2 = key[1:]
-                        counter1 += 1
-                        #print('KEY1 NEGATIV: ', key1)
-                        #print('KEY2 NEGATIV: ', key2)
-                        #print('COUNTS NEGATIV: ', counter1)
-                        #print('ATOMS_TO_NUMBERS_DICT i NEGATIV: ', atoms_to_numbers_dict)
                         if ((key1 not in atoms_to_numbers_dict) or (key2 not in atoms_to_numbers_dict)):
-                                counter3 += 1
-                                #print('COUNTER INSIDE NEGATIV: ', counter3)
                                 atoms_to_numbers_dict[key2] = val1
                                 atoms_to_numbers_dict[key1] = val2
                                 numbers_to_atoms_dict[val1] = key2
                                 numbers_to_atoms_dict[val2] = key1
                                 value += 1 
-                        #print('ATOMS_TO_NUMBERS_DICT i NEGATIV END: ', atoms_to_numbers_dict)
                 else:
                         key1 = key
                         key2 = '-' + key
-                        counter2 += 1
-                        #print('KEY1 POSITIV: ', key1)
-                        #print('KEY2 POSITIV: ', key2)
-                        #print('COUNTS POSITIV: ', counter2)
                         if ((key1 not in atoms_to_numbers_dict) or (key2 not in atoms_to_numbers_dict)):
-                                counter4 += 1
-                                #print('COUNTER INSIDE POSITIV: ',counter4)
                                 atoms_to_numbers_dict[key1] = val1
                                 atoms_to_numbers_dict[key2] = val2
                                 numbers_to_atoms_dict[val1] = key1
@@ -133,8 +116,8 @@ def createConversionDicts(file_name):
         return atoms_to_numbers_dict, numbers_to_atoms_dict
 
 def extendConversionDicts(horizon, old_atoms_to_num_dict, old_num_to_atoms_dict):
-        #utvid med ett timestep
-        #return sat_set_dict
+        #extend with one time-step
+        #return atoms_to_numbers and numbers_to_atoms - dicts
         h = horizon
         atom_dict = old_atoms_to_num_dict
         num_dict = old_num_to_atoms_dict
@@ -185,8 +168,7 @@ def createInitialStateCnfSentence(sat_set_dict, init_states, all_action_combinat
                 copy_init_states[atom] = copy_init_states[atom] + '0'
         for atom in range(len(copy_init_states)):
                 for key, val in copy_sat_set_dict.items():
-                        #print('Copy_init_states[atom]: ', copy_init_states[atom])                               
-                        #if key == copy_init_states[atom]:
+                        #print('Copy_init_states[atom]: ', copy_init_states[atom])
                         if key in copy_init_states:
                                 #print('ATOM MATCH FOUND')
                                 single_object_clause = key
@@ -212,7 +194,6 @@ def createInitialStateCnfSentence(sat_set_dict, init_states, all_action_combinat
                 clauses.append([atomToNumber(sat_set_dict, init_cnf_list[atom])])
                 #print('Single clause: ', clauses)
 
-        #print('Init cnf list333: ', init_cnf_list)
         #print('Clauses: ', clauses)
         return clauses
 
@@ -400,4 +381,4 @@ def atomToNumber(atom_to_number_dict, atom_name):
 
 #createConversionDicts()
 #actionSatToCnf()
-encodingHandler()
+#encodingHandler()

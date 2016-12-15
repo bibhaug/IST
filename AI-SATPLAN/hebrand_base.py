@@ -212,9 +212,9 @@ def allVariationsOfActionNames(all_actions): #with corresponding effects and pre
         return list_of_actions
 
 
-all_actions, init_atoms, goal_atoms = info_from_file()
-allVariationsOfActionNames(all_actions)
-#print(hebrandBase())
+#all_actions, init_atoms, goal_atoms = info_from_file()
+#allVariationsOfActionNames(all_actions)
+print(hebrandBase())
 # hebrandbase=list(hebrandBase())
 # counter = 0
 # counter2 = 0
